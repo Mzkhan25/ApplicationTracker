@@ -14,7 +14,7 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
 | --------------- | ------ | -------------------------------------------- |
 | `npm run lint`  | ✅ pass | 0 problems                                   |
 | `npm run build` | ✅ pass | tsc strict + Vite build                      |
-| `npm test`      | ✅ pass | 22 tests, 6 files                            |
+| `npm test`      | ✅ pass | 23 tests, 7 files                            |
 | `npm run dev`   | ✅ runs | `/`, `/board`, `/favicon.svg` → HTTP 200     |
 
 ## Completed
@@ -40,6 +40,8 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
 - [x] **Pipeline donut** (2026-06-05) — replaced the funnel-bar widget with a
       hand-rolled SVG donut (`PipelineBreakdown`) backed by the pure
       `donutSegments` helper; complements StageCounts. See `DECISIONS.md` D10.
+- [x] **"How to use" page** (2026-06-05) — in-app `/help` page documenting every
+      feature; "How to use" nav link. `src/pages/HelpPage.tsx`.
 
 ## Test inventory (16 tests)
 
@@ -53,6 +55,8 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
   stage's follow-up window.
 - `src/utils/donut.test.ts` — `donutSegments` proportional arcs, cumulative
   offsets, and the total-zero case.
+- `src/pages/HelpPage.test.tsx` — the page title and every section heading
+  render.
 - `src/pages/BoardPage.test.tsx` — renders default columns + seeded cards; add an
   application through the modal persists to the store.
 - `src/pages/DashboardPage.test.tsx` — all four widgets render; the stale seeded

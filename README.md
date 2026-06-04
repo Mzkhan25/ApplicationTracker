@@ -19,6 +19,7 @@ Tailwind CSS.
 - **Local-first** — all data is stored in your browser via `localStorage`. No
   account, no server. The data layer sits behind a `TrackerRepository`
   interface so a backend can be added later without touching the UI.
+- **In-app "How to use" page** — `/help` documents every feature for end users.
 
 ## Getting started
 

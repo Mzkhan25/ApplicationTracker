@@ -70,7 +70,8 @@ staleness. `createdAt` is set once. Any move/edit bumps `updatedAt`.
 ```
 src/
   main.tsx                  React root; BrowserRouter (v7 future flags on)
-  App.tsx                   Store init + routes (/ Dashboard, /board Board)
+  App.tsx                   Store init + routes (/ Dashboard, /board Board,
+                            /help How to use)
   index.css                 Tailwind import + @theme tokens + base styles
   types.ts                  Domain types (above)
 
@@ -100,10 +101,11 @@ src/
   pages/
     DashboardPage.tsx       Wires services → dashboard widgets
     BoardPage.tsx           Board + add/edit application modal
-    BoardPage.test.tsx, DashboardPage.test.tsx  (integration)
+    HelpPage.tsx            Static "How to use" instructions (all features)
+    BoardPage.test.tsx, DashboardPage.test.tsx, HelpPage.test.tsx  (integration)
 
   components/
-    layout/   AppShell (header+nav), NavBar (Dashboard/Board links)
+    layout/   AppShell (header+nav), NavBar (Dashboard/Board/How-to-use links)
     common/   Button, Badge, PriorityTag, Modal  (reusable primitives)
     board/    Board (DndContext orchestration), Column (droppable + kebab
               menu + inline rename), Card (sortable, grip handle),

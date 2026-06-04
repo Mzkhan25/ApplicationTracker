@@ -4,6 +4,7 @@ import { useAppStore } from './store/useAppStore';
 import { AppShell } from './components/layout/AppShell';
 import DashboardPage from './pages/DashboardPage';
 import BoardPage from './pages/BoardPage';
+import HelpPage from './pages/HelpPage';
 
 export default function App() {
   const init = useAppStore((s) => s.init);
@@ -26,6 +27,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/board" element={<BoardPage />} />
+        <Route path="/help" element={<HelpPage />} />
       </Routes>
     </AppShell>
   );

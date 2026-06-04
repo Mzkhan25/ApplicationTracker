@@ -3,6 +3,17 @@
 Newest first. One bullet per meaningful change. Add an entry whenever you change
 behavior, structure, or dependencies (see the documentation rule in `CLAUDE.md`).
 
+## 2026-06-05 — "How to use" page
+
+- **Feature:** Added an in-app `/help` page ("How to use") documenting every
+  feature — the board, adding/editing/moving/deleting applications, card fields,
+  customizing columns, follow-up reminders, reading the dashboard, and local
+  data storage.
+- New `src/pages/HelpPage.tsx` (static content, matches existing design via
+  `Panel`); `/help` route in `App.tsx`; "How to use" link in `NavBar`.
+- Test: `HelpPage.test.tsx` asserts the title and every section heading render.
+- Tests: 22 → 23.
+
 ## 2026-06-05 — Pipeline funnel → donut chart
 
 - **Change:** Replaced the funnel-bar "Pipeline funnel" widget with a donut chart
