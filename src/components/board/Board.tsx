@@ -28,6 +28,7 @@ export function Board({ onAddCard, onEditCard }: BoardProps) {
   const stages = useAppStore((s) => s.stages);
   const moveApplication = useAppStore((s) => s.moveApplication);
   const renameStage = useAppStore((s) => s.renameStage);
+  const setStageFollowUpDays = useAppStore((s) => s.setStageFollowUpDays);
   const deleteStage = useAppStore((s) => s.deleteStage);
   const moveStage = useAppStore((s) => s.moveStage);
   const addStage = useAppStore((s) => s.addStage);
@@ -104,6 +105,7 @@ export function Board({ onAddCard, onEditCard }: BoardProps) {
             onAddCard={onAddCard}
             onEditCard={onEditCard}
             onRename={renameStage}
+            onSetFollowUp={setStageFollowUpDays}
             onDelete={deleteStage}
             onMoveLeft={moveLeft}
             onMoveRight={moveRight}

@@ -41,7 +41,7 @@ export function StatTiles({
       <Tile
         label="Follow-ups due"
         value={String(followUpCount)}
-        hint="no update in 7+ days"
+        hint="past stage reminder window"
       />
     </div>
   );

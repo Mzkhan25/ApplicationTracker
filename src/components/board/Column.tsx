@@ -13,6 +13,7 @@ interface ColumnProps {
   onAddCard: (stageId: string) => void;
   onEditCard: (application: Application) => void;
   onRename: (stageId: string, name: string) => void;
+  onSetFollowUp: (stageId: string, days?: number) => void;
   onDelete: (stageId: string) => void;
   onMoveLeft: (stageId: string) => void;
   onMoveRight: (stageId: string) => void;
@@ -27,6 +28,7 @@ export function Column({
   onAddCard,
   onEditCard,
   onRename,
+  onSetFollowUp,
   onDelete,
   onMoveLeft,
   onMoveRight,
@@ -35,10 +37,21 @@ export function Column({
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [draftName, setDraftName] = useState(stage.name);
+  const [editingFollowUp, setEditingFollowUp] = useState(false);
+  const [followUpDraft, setFollowUpDraft] = useState(
+    stage.followUpDays?.toString() ?? '',
+  );
 
   const commitRename = () => {
     onRename(stage.id, draftName);
     setRenaming(false);
+  };
+
+  const commitFollowUp = () => {
+    const trimmed = followUpDraft.trim();
+    const days = trimmed === '' ? undefined : Math.max(1, Number(trimmed));
+    onSetFollowUp(stage.id, Number.isNaN(days) ? undefined : days);
+    setEditingFollowUp(false);
   };
 
   const menuAction = (fn: () => void) => () => {
@@ -74,6 +87,17 @@ export function Column({
             {stage.name}
           </h3>
         )}
+        {stage.followUpDays != null && (
+          <span
+            title={`Follow-up reminder after ${stage.followUpDays} days of inactivity`}
+            className="flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 text-xs font-medium text-amber-700"
+          >
+            <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm.75 4a.75.75 0 0 0-1.5 0v4c0 .2.08.39.22.53l2.5 2.5a.75.75 0 1 0 1.06-1.06L10.75 9.69V6Z" />
+            </svg>
+            {stage.followUpDays}d
+          </span>
+        )}
         <span className="rounded-full bg-slate-300/70 px-1.5 text-xs font-medium text-slate-600">
           {applications.length}
         </span>
@@ -102,6 +126,14 @@ export function Column({
                   Rename
                 </MenuItem>
                 <MenuItem
+                  onClick={menuAction(() => {
+                    setFollowUpDraft(stage.followUpDays?.toString() ?? '');
+                    setEditingFollowUp(true);
+                  })}
+                >
+                  Follow-up reminder…
+                </MenuItem>
+                <MenuItem
                   disabled={isFirst}
                   onClick={menuAction(() => onMoveLeft(stage.id))}
                 >
@@ -125,6 +157,29 @@ export function Column({
           )}
         </div>
       </div>
+
+      {/* Follow-up reminder editor */}
+      {editingFollowUp && (
+        <div className="mx-2 mb-2 rounded-md bg-white p-2 shadow-sm">
+          <label className="mb-1 block text-xs font-medium text-slate-600">
+            Remind after (days of inactivity)
+          </label>
+          <input
+            autoFocus
+            type="number"
+            min={1}
+            value={followUpDraft}
+            onChange={(e) => setFollowUpDraft(e.target.value)}
+            onBlur={commitFollowUp}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitFollowUp();
+              if (e.key === 'Escape') setEditingFollowUp(false);
+            }}
+            placeholder="blank = off"
+            className="w-full rounded border border-slate-300 px-2 py-1 text-sm focus:border-brand-500 focus:outline-none"
+          />
+        </div>
+      )}
 
       {/* Cards */}
       <div

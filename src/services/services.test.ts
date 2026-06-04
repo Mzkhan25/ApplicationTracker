@@ -86,8 +86,12 @@ describe('metrics', () => {
 
 describe('followups', () => {
   const now = new Date('2026-06-04T00:00:00.000Z');
-  const withUpdated = (id: string, updatedAt: string): Application => ({
-    ...app(id, 's1', 0),
+  const stageWithWindow = (id: string, order: number, followUpDays?: number) => ({
+    ...stage(id, order),
+    followUpDays,
+  });
+  const withStage = (id: string, stageId: string, updatedAt: string): Application => ({
+    ...app(id, stageId, 0),
     updatedAt,
   });
 
@@ -95,14 +99,37 @@ describe('followups', () => {
     expect(daysSince('2026-05-28T00:00:00.000Z', now)).toBe(7);
   });
 
-  it('flags only applications stale beyond the threshold, most stale first', () => {
+  it('flags an application only when inactivity exceeds its stage window', () => {
+    const stages = [stageWithWindow('s1', 0, 7)];
     const apps = [
-      withUpdated('fresh', '2026-06-03T00:00:00.000Z'), // 1 day
-      withUpdated('stale', '2026-05-25T00:00:00.000Z'), // 10 days
-      withUpdated('stalest', '2026-05-20T00:00:00.000Z'), // 15 days
+      withStage('fresh', 's1', '2026-06-01T00:00:00.000Z'), // 3 days
+      withStage('stale', 's1', '2026-05-25T00:00:00.000Z'), // 10 days
     ];
-    const result = staleApplications(apps, 7, now).map((a) => a.id);
-    expect(result).toEqual(['stalest', 'stale']);
+    expect(staleApplications(apps, stages, now).map((a) => a.id)).toEqual([
+      'stale',
+    ]);
+  });
+
+  it('never flags applications in a stage with no follow-up window', () => {
+    const stages = [stageWithWindow('s1', 0)];
+    const apps = [withStage('ancient', 's1', '2026-01-01T00:00:00.000Z')];
+    expect(staleApplications(apps, stages, now)).toEqual([]);
+  });
+
+  it('respects per-stage windows and sorts most stale first', () => {
+    const stages = [
+      stageWithWindow('quick', 0, 3),
+      stageWithWindow('slow', 1, 14),
+    ];
+    const apps = [
+      withStage('a', 'quick', '2026-05-30T00:00:00.000Z'), // 5 days > 3 → flag
+      withStage('b', 'slow', '2026-05-30T00:00:00.000Z'), //  5 days < 14 → no
+      withStage('c', 'slow', '2026-05-15T00:00:00.000Z'), // 20 days > 14 → flag
+    ];
+    expect(staleApplications(apps, stages, now).map((a) => a.id)).toEqual([
+      'c',
+      'a',
+    ]);
   });
 });
 

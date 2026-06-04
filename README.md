@@ -14,7 +14,8 @@ Tailwind CSS.
 - **Rich application cards** — company, role, status, applied date, job URL,
   priority, location, work mode, salary range, and notes.
 - **Dashboard** — applications-by-stage, a pipeline funnel, recent activity, and
-  follow-up reminders for applications with no update in 7+ days.
+  follow-up reminders driven by a per-stage window (each column can flag cards
+  that sit idle too long; terminal columns can be left off).
 - **Local-first** — all data is stored in your browser via `localStorage`. No
   account, no server. The data layer sits behind a `TrackerRepository`
   interface so a backend can be added later without touching the UI.

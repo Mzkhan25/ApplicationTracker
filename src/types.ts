@@ -17,6 +17,12 @@ export interface Stage {
   order: number;
   /** Tailwind-friendly accent color, used for the column header and funnel. */
   color: string;
+  /**
+   * Follow-up window in days. An application in this stage is flagged for
+   * follow-up once it has gone this many days without an update. Unset means
+   * the stage never generates follow-up reminders (e.g. terminal columns).
+   */
+  followUpDays?: number;
 }
 
 /** A single job application — one card on the board. */

@@ -6,11 +6,9 @@ import { staleApplications } from '../services/followups';
 import { recentApplications } from '../services/activity';
 import { StatTiles } from '../components/dashboard/StatTiles';
 import { StageCounts } from '../components/dashboard/StageCounts';
-import { ConversionFunnel } from '../components/dashboard/ConversionFunnel';
+import { PipelineBreakdown } from '../components/dashboard/PipelineBreakdown';
 import { RecentActivity } from '../components/dashboard/RecentActivity';
 import { FollowUpList } from '../components/dashboard/FollowUpList';
-
-const FOLLOW_UP_DAYS = 7;
 
 export default function DashboardPage() {
   const stages = useAppStore((s) => s.stages);
@@ -23,7 +21,7 @@ export default function DashboardPage() {
       summary: pipelineSummary(data),
       counts: stageCounts(data),
       recent: recentApplications(applications, 6),
-      followUps: staleApplications(applications, FOLLOW_UP_DAYS),
+      followUps: staleApplications(applications, stages),
       stageById: new Map(stages.map((s) => [s.id, s])),
       companyCount: new Set(applications.map((a) => a.company)).size,
     };
@@ -55,7 +53,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <StageCounts counts={view.counts} />
-        <ConversionFunnel summary={view.summary} />
+        <PipelineBreakdown summary={view.summary} />
         <RecentActivity items={view.recent} stageById={view.stageById} />
         <FollowUpList
           items={view.followUps}

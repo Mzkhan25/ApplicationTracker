@@ -2,19 +2,19 @@
 
 **Single source of truth for "where are we." Update this on every change.**
 
-_Last updated: 2026-06-04_
+_Last updated: 2026-06-05_
 
 ## Snapshot
 
-The initial implementation is **complete and green**. A local-first job
-application tracker with an editable Kanban board and a dashboard is fully
-functional. All quality gates pass.
+The initial implementation is **complete and green**, plus per-stage follow-up
+reminders (2026-06-05). A local-first job application tracker with an editable
+Kanban board and a dashboard is fully functional. All quality gates pass.
 
 | Gate            | Status | Notes                                        |
 | --------------- | ------ | -------------------------------------------- |
 | `npm run lint`  | ✅ pass | 0 problems                                   |
 | `npm run build` | ✅ pass | tsc strict + Vite build                      |
-| `npm test`      | ✅ pass | 16 tests, 4 files                            |
+| `npm test`      | ✅ pass | 22 tests, 6 files                            |
 | `npm run dev`   | ✅ runs | `/`, `/board`, `/favicon.svg` → HTTP 200     |
 
 ## Completed
@@ -33,6 +33,13 @@ functional. All quality gates pass.
       activity, follow-up reminders (with "Done" to reset staleness).
 - [x] **Polish** — favicon, Router v7 future flags, `.gitignore` Vite block,
       README, this documentation set.
+- [x] **Per-stage follow-up reminders** (2026-06-05) — `Stage.followUpDays`;
+      `staleApplications` uses each app's stage window; seeded defaults
+      (14/7/5/off/off); `setStageFollowUpDays` action; column kebab editor +
+      header ⏰ badge. See `DECISIONS.md` D9.
+- [x] **Pipeline donut** (2026-06-05) — replaced the funnel-bar widget with a
+      hand-rolled SVG donut (`PipelineBreakdown`) backed by the pure
+      `donutSegments` helper; complements StageCounts. See `DECISIONS.md` D10.
 
 ## Test inventory (16 tests)
 
@@ -40,11 +47,16 @@ functional. All quality gates pass.
   round-trip.
 - `src/services/services.test.ts` — `moveCard` (cross/intra-column, unknown id),
   `reorderStages`, `stageCounts`, `pipelineSummary` (incl. empty), `followups`
-  (`daysSince`, threshold + ordering), `recentApplications`.
+  (`daysSince`; per-stage windows; unset stage never flags; ordering),
+  `recentApplications`.
+- `src/store/useAppStore.test.ts` — `setStageFollowUpDays` sets and clears a
+  stage's follow-up window.
+- `src/utils/donut.test.ts` — `donutSegments` proportional arcs, cumulative
+  offsets, and the total-zero case.
 - `src/pages/BoardPage.test.tsx` — renders default columns + seeded cards; add an
   application through the modal persists to the store.
 - `src/pages/DashboardPage.test.tsx` — all four widgets render; the stale seeded
-  app (Globex) surfaces as a follow-up.
+  app (Globex, Phone Screen 7d window, idle 12d) surfaces as a follow-up.
 
 ## Known limitations / gaps
 
@@ -84,7 +96,10 @@ npm run dev
    stays in the new column (localStorage round-trip).
 3. Add a column, rename it via the kebab menu, move it left/right, delete it →
    cards in a deleted column move to the first remaining column.
-4. Click a card → edit fields / delete → changes reflect on the board and
+4. Column kebab → "Follow-up reminder…" → set a small day count → the ⏰ badge
+   appears in the header; a card idle past that window shows under "Follow-up
+   reminders" on the dashboard. Clear the field to turn reminders off.
+5. Click a card → edit fields / delete → changes reflect on the board and
    dashboard.
 
 ## Environment

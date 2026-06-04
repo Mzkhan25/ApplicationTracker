@@ -37,6 +37,7 @@ interface AppState extends TrackerData {
   moveApplication: (activeId: string, toStageId: string, toIndex: number) => void;
   addStage: (name: string) => void;
   renameStage: (id: string, name: string) => void;
+  setStageFollowUpDays: (id: string, days?: number) => void;
   deleteStage: (id: string) => void;
   moveStage: (activeId: string, overId: string) => void;
 }
@@ -115,6 +116,14 @@ export const useAppStore = create<AppState>((set, get) => {
       const { stages, applications } = get();
       const next = stages.map((s) =>
         s.id === id ? { ...s, name: name.trim() || s.name } : s,
+      );
+      commit({ stages: next, applications });
+    },
+
+    setStageFollowUpDays: (id, days) => {
+      const { stages, applications } = get();
+      const next = stages.map((s) =>
+        s.id === id ? { ...s, followUpDays: days } : s,
       );
       commit({ stages: next, applications });
     },

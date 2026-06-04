@@ -18,7 +18,7 @@ describe('DashboardPage', () => {
 
     for (const title of [
       'Applications by stage',
-      'Pipeline funnel',
+      'Pipeline breakdown',
       'Recent activity',
       'Follow-up reminders',
     ]) {

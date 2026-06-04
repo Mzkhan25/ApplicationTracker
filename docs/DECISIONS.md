@@ -124,3 +124,56 @@ issue.)
 **Decision:** Generate IDs with the built-in `crypto.randomUUID()`.
 
 **Why:** Available in the browser and in Node 20 / jsdom; removes a dependency.
+
+---
+
+## D9 — Follow-up reminders are a per-stage window (stage gains a behavior)
+
+**Decision:** Each `Stage` has an optional `followUpDays`. An application is due
+for follow-up when its days-since-`updatedAt` exceeds *its stage's* window.
+Unset = the stage never flags. Replaces the earlier single global 7-day
+threshold.
+
+**Why:** Different stages have different urgency — chase an "Interview" within
+days, but "Applied" can sit for weeks — and terminal stages (Offer/Rejected)
+shouldn't nag at all. A per-stage window expresses all of this naturally, and
+"unset = off" silences terminal columns without special-casing names (stays
+consistent with D2's no-hardcoded-stage-names rule).
+
+**Note — relationship to D2:** This is the first time a stage carries *behavior*
+(not just display). It does **not** reintroduce stage semantics by name — the
+behavior is opt-in numeric config the user controls per column. Metrics in
+`metrics.ts` remain semantic-free. If a future change wants win/loss conversion,
+that's a separate decision (see D2's rejected alternative).
+
+**Implementation:** `followUpDays?` on `Stage`; `staleApplications(apps, stages,
+now)` in `followups.ts`; `setStageFollowUpDays` store action; column kebab menu
+editor + header ⏰ badge.
+
+**Alternatives rejected:** Keep the global threshold (can't express per-stage
+urgency or silence terminal columns). Per-application reminder dates (a different
+feature — a reminder on a *card*, not a *stage*; could be added later alongside
+this).
+
+---
+
+## D10 — Pipeline view is a donut (proportion), built dependency-free
+
+**Decision:** The "Pipeline breakdown" widget is a donut chart — each stage is a
+slice sized by its share of total applications — built as hand-rolled SVG via the
+pure `donutSegments` helper. It replaced the earlier funnel-bar widget.
+
+**Why:** A donut is the canonical proportion-of-whole visualization, so it pairs
+cleanly with StageCounts: **StageCounts = magnitude** (which column is biggest,
+exact counts), **PipelineBreakdown = proportion** (each stage's share). The old
+funnel bars were a near-duplicate of StageCounts and "funnel" was misleading —
+the data was never a cumulative drop-off funnel (see D2).
+
+**Why hand-rolled (no chart library):** A static donut is ~40 lines of SVG using
+`stroke-dasharray` arcs; a library (recharts/chart.js) would add ~100–500 kB for
+one chart and a new API surface. The codebase already hand-rolls all its SVGs.
+Tradeoff: no built-in hover tooltips/animation (acceptable for this widget).
+
+**Alternatives rejected:** Keep the funnel bars (redundant with StageCounts).
+Add a chart library (heavy for one small static chart). A *true* cumulative
+conversion funnel (needs stage win/lost semantics — blocked by D2).

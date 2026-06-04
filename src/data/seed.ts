@@ -1,12 +1,20 @@
 import type { Application, Stage, TrackerData } from '../types';
 
-/** Stable color accents for the five default columns. */
-const DEFAULT_STAGE_DEFS: ReadonlyArray<{ name: string; color: string }> = [
-  { name: 'Applied', color: '#3b82f6' }, // blue
-  { name: 'Phone Screen', color: '#8b5cf6' }, // violet
-  { name: 'Interview', color: '#f59e0b' }, // amber
-  { name: 'Offer', color: '#10b981' }, // emerald
-  { name: 'Rejected', color: '#ef4444' }, // red
+/**
+ * The five default columns: color accent plus a follow-up window (days of
+ * inactivity before a card is flagged). Terminal columns leave it unset so
+ * they never generate reminders.
+ */
+const DEFAULT_STAGE_DEFS: ReadonlyArray<{
+  name: string;
+  color: string;
+  followUpDays?: number;
+}> = [
+  { name: 'Applied', color: '#3b82f6', followUpDays: 14 }, // blue
+  { name: 'Phone Screen', color: '#8b5cf6', followUpDays: 7 }, // violet
+  { name: 'Interview', color: '#f59e0b', followUpDays: 5 }, // amber
+  { name: 'Offer', color: '#10b981' }, // emerald — terminal, no reminder
+  { name: 'Rejected', color: '#ef4444' }, // red — terminal, no reminder
 ];
 
 const newId = (): string => crypto.randomUUID();
@@ -27,6 +35,7 @@ export function createDefaultStages(): Stage[] {
     name: def.name,
     order: index,
     color: def.color,
+    followUpDays: def.followUpDays,
   }));
 }
 

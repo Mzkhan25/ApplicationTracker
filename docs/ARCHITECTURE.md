@@ -49,7 +49,9 @@ a `useMemo`. Widgets are pure presentational components receiving props.
 
 - `Priority` = `'high' | 'medium' | 'low'`
 - `WorkMode` = `'remote' | 'hybrid' | 'onsite'`
-- `Stage` = `{ id, name, order, color }` — a board column; user-editable.
+- `Stage` = `{ id, name, order, color, followUpDays? }` — a board column;
+  user-editable. `followUpDays` is the per-column follow-up window (unset = no
+  reminders for that column).
 - `Application` = `{ id, company, role, stageId, order, appliedDate, jobUrl?,
   priority, location?, workMode?, salaryMin?, salaryMax?, notes?, createdAt,
   updatedAt }` — one card.
@@ -82,14 +84,16 @@ src/
     useAppStore.ts          Zustand store + ApplicationInput type.
                             Actions: init, addApplication, updateApplication,
                             deleteApplication, moveApplication, addStage,
-                            renameStage, deleteStage, moveStage.
+                            renameStage, setStageFollowUpDays, deleteStage,
+                            moveStage.
                             Private commit() persists every change.
 
   services/                 PURE, unit-tested, no React:
     ordering.ts             applicationsInStage, moveCard, reorderStages
     metrics.ts              stageCounts, pipelineSummary (StageCount,
                             PipelineSummary types)
-    followups.ts            daysSince, staleApplications
+    followups.ts            daysSince, staleApplications(apps, stages, now)
+                            — per-stage windows via Stage.followUpDays
     activity.ts             recentApplications
     services.test.ts
 
@@ -105,11 +109,13 @@ src/
               menu + inline rename), Card (sortable, grip handle),
               ApplicationForm (Field-wrapped inputs), AddColumn
     dashboard/ Panel (section wrapper), StatTiles, StageCounts,
-              ConversionFunnel, RecentActivity, FollowUpList
+              PipelineBreakdown (SVG donut), RecentActivity, FollowUpList
 
   utils/
     format.ts               formatSalary, formatShortDate, workModeLabel,
                             relativeDay
+    donut.ts                donutSegments — pure SVG donut arc geometry
+    donut.test.ts
 
   test/
     setup.ts                jest-dom; clears DOM + localStorage after each test
