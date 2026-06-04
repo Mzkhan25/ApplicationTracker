@@ -22,6 +22,7 @@ export interface ApplicationInput {
   workMode?: WorkMode;
   salaryMin?: number;
   salaryMax?: number;
+  demandedSalary?: number;
   notes?: string;
 }
 

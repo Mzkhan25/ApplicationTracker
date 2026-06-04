@@ -1,9 +1,21 @@
-/** Format a salary range compactly, e.g. "$120k–150k" or "$120k+". */
+const EUR = new Intl.NumberFormat('en-IE', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+/** Format an exact amount in euros, e.g. "€185,000". */
+export function formatMoney(amount: number): string {
+  return EUR.format(amount);
+}
+
+/** Format a salary range compactly in euros, e.g. "€120k–150k" or "€120k+". */
 export function formatSalary(min?: number, max?: number): string | null {
   const k = (n: number) => `${Math.round(n / 1000)}k`;
-  if (min != null && max != null) return `$${k(min)}–${k(max)}`;
-  if (min != null) return `$${k(min)}+`;
-  if (max != null) return `up to $${k(max)}`;
+  if (min != null && max != null) return `€${k(min)}–${k(max)}`;
+  if (min != null) return `€${k(min)}+`;
+  if (max != null) return `up to €${k(max)}`;
   return null;
 }
 

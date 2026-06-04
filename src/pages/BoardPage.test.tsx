@@ -23,6 +23,8 @@ describe('BoardPage', () => {
       expect(screen.getByRole('heading', { name })).toBeInTheDocument();
     }
     expect(screen.getByText('Acme Corp')).toBeInTheDocument();
+    // Demanded salary is shown on the card (exact, euros).
+    expect(screen.getByText('Asking €185,000')).toBeInTheDocument();
   });
 
   it('adds a new application through the modal', async () => {
@@ -33,9 +35,14 @@ describe('BoardPage', () => {
     const dialog = screen.getByRole('dialog');
     await user.type(within(dialog).getByLabelText('Company *'), 'Hooli');
     await user.type(within(dialog).getByLabelText('Role *'), 'Platform Engineer');
+    await user.type(
+      within(dialog).getByLabelText('Demanded salary (your ask)'),
+      '130000',
+    );
     await user.click(within(dialog).getByRole('button', { name: 'Add application' }));
 
     expect(screen.getByText('Hooli')).toBeInTheDocument();
+    expect(screen.getByText('Asking €130,000')).toBeInTheDocument();
     // Persisted to the store.
     expect(
       useAppStore.getState().applications.some((a) => a.company === 'Hooli'),

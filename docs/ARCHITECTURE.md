@@ -53,8 +53,9 @@ a `useMemo`. Widgets are pure presentational components receiving props.
   user-editable. `followUpDays` is the per-column follow-up window (unset = no
   reminders for that column).
 - `Application` = `{ id, company, role, stageId, order, appliedDate, jobUrl?,
-  priority, location?, workMode?, salaryMin?, salaryMax?, notes?, createdAt,
-  updatedAt }` — one card.
+  priority, location?, workMode?, salaryMin?, salaryMax?, demandedSalary?,
+  notes?, createdAt, updatedAt }` — one card. `demandedSalary` is the salary
+  you're asking for (distinct from the posted min/max range).
 - `TrackerData` = `{ stages, applications }` — the unit the repository
   loads/saves.
 
@@ -114,8 +115,9 @@ src/
               PipelineBreakdown (SVG donut), RecentActivity, FollowUpList
 
   utils/
-    format.ts               formatSalary, formatShortDate, workModeLabel,
-                            relativeDay
+    format.ts               formatMoney, formatSalary, formatShortDate,
+                            workModeLabel, relativeDay
+    format.test.ts
     donut.ts                donutSegments — pure SVG donut arc geometry
     donut.test.ts
 

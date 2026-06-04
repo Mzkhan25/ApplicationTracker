@@ -3,7 +3,12 @@ import { CSS } from '@dnd-kit/utilities';
 import type { Application } from '../../types';
 import { PriorityTag } from '../common/PriorityTag';
 import { Badge } from '../common/Badge';
-import { formatSalary, formatShortDate, workModeLabel } from '../../utils/format';
+import {
+  formatMoney,
+  formatSalary,
+  formatShortDate,
+  workModeLabel,
+} from '../../utils/format';
 
 interface CardProps {
   application: Application;
@@ -28,6 +33,10 @@ export function Card({ application, onClick, overlay = false }: CardProps) {
 
   const salary = formatSalary(application.salaryMin, application.salaryMax);
   const mode = workModeLabel(application.workMode);
+  const demanded =
+    application.demandedSalary != null
+      ? formatMoney(application.demandedSalary)
+      : null;
 
   return (
     <div
@@ -69,6 +78,11 @@ export function Card({ application, onClick, overlay = false }: CardProps) {
         <PriorityTag priority={application.priority} />
         {mode && <Badge>{mode}</Badge>}
         {salary && <Badge>{salary}</Badge>}
+        {demanded && (
+          <Badge color="#2563eb" className="font-semibold">
+            Asking {demanded}
+          </Badge>
+        )}
       </div>
 
       <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">

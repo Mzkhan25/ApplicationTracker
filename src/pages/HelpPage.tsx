@@ -106,10 +106,19 @@ export default function HelpPage() {
               </Step>
               <Step>
                 <strong className="text-slate-700">Location</strong>,{' '}
-                <strong className="text-slate-700">Job posting URL</strong>,{' '}
-                <strong className="text-slate-700">Salary min/max</strong> (shown
-                as e.g. “$120k–150k”), and{' '}
-                <strong className="text-slate-700">Notes</strong> — all optional.
+                <strong className="text-slate-700">Job posting URL</strong>, and{' '}
+                <strong className="text-slate-700">Salary min/max</strong> — the
+                role’s posted range (e.g. “€120k–150k”).
+              </Step>
+              <Step>
+                <strong className="text-slate-700">Demanded salary</strong> — the
+                salary you’re asking for (shown exactly, not rounded). Appears
+                prominently on the card as a badge like “Asking €130,000”,
+                separate from the posted range.
+              </Step>
+              <Step>
+                <strong className="text-slate-700">Notes</strong> — free text for
+                interview details, contacts, follow-ups (optional).
               </Step>
             </ul>
           </div>

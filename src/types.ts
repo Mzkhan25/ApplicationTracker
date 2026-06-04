@@ -42,6 +42,8 @@ export interface Application {
   workMode?: WorkMode;
   salaryMin?: number;
   salaryMax?: number;
+  /** The salary you are asking for on this application (your demand). */
+  demandedSalary?: number;
   notes?: string;
   /** ISO timestamps for activity tracking and follow-up staleness. */
   createdAt: string;

@@ -64,6 +64,9 @@ export function ApplicationForm({
   const [salaryMax, setSalaryMax] = useState(
     initial?.salaryMax?.toString() ?? '',
   );
+  const [demandedSalary, setDemandedSalary] = useState(
+    initial?.demandedSalary?.toString() ?? '',
+  );
   const [notes, setNotes] = useState(initial?.notes ?? '');
 
   const handleSubmit = (e: FormEvent) => {
@@ -80,6 +83,7 @@ export function ApplicationForm({
       jobUrl: trimOrUndef(jobUrl),
       salaryMin: numOrUndef(salaryMin),
       salaryMax: numOrUndef(salaryMax),
+      demandedSalary: numOrUndef(demandedSalary),
       notes: trimOrUndef(notes),
     });
   };
@@ -194,6 +198,16 @@ export function ApplicationForm({
           />
         </Field>
       </div>
+
+      <Field label="Demanded salary (your ask)">
+        <input
+          type="number"
+          className={inputClass}
+          value={demandedSalary}
+          onChange={(e) => setDemandedSalary(e.target.value)}
+          placeholder="130000"
+        />
+      </Field>
 
       <Field label="Notes">
         <textarea

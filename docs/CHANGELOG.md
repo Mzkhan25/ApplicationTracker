@@ -3,6 +3,29 @@
 Newest first. One bullet per meaningful change. Add an entry whenever you change
 behavior, structure, or dependencies (see the documentation rule in `CLAUDE.md`).
 
+## 2026-06-05 — Euros + exact demanded salary
+
+- **Change:** All finances now display in **euros (€)** instead of dollars.
+- The **demanded salary** is shown **exactly** (no rounding), e.g. `€185,000`
+  (was `$185k`) — via `Intl.NumberFormat('en-IE', EUR)` in `formatMoney`.
+- The posted salary **range** stays abbreviated but switched to euros
+  (`€120k–150k`). See `DECISIONS.md` D11.
+- Updated `formatMoney`/`formatSalary` + their tests, the board test assertions,
+  and the in-app HelpPage examples.
+
+## 2026-06-05 — "Demanded salary" application field
+
+- **Feature:** Applications gained an optional `demandedSalary` (the salary you're
+  asking for), kept **alongside** the existing posted `salaryMin`/`salaryMax`
+  range. Shown prominently on the card as a brand-colored "Asking $130k" badge.
+- `Application` + `ApplicationInput` gained `demandedSalary?: number`; new form
+  field "Demanded salary (your ask)"; card badge via new `formatMoney` helper;
+  two seeded samples carry a value.
+- `formatMoney(n)` added to `src/utils/format.ts` (unit-tested), distinct from
+  the range `formatSalary`.
+- Tests: 23 → 27 (formatMoney + formatSalary regression; board assertions for the
+  card badge and form round-trip).
+
 ## 2026-06-05 — "How to use" page
 
 - **Feature:** Added an in-app `/help` page ("How to use") documenting every

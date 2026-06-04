@@ -14,7 +14,7 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
 | --------------- | ------ | -------------------------------------------- |
 | `npm run lint`  | ✅ pass | 0 problems                                   |
 | `npm run build` | ✅ pass | tsc strict + Vite build                      |
-| `npm test`      | ✅ pass | 23 tests, 7 files                            |
+| `npm test`      | ✅ pass | 26 tests, 8 files                            |
 | `npm run dev`   | ✅ runs | `/`, `/board`, `/favicon.svg` → HTTP 200     |
 
 ## Completed
@@ -42,6 +42,11 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
       `donutSegments` helper; complements StageCounts. See `DECISIONS.md` D10.
 - [x] **"How to use" page** (2026-06-05) — in-app `/help` page documenting every
       feature; "How to use" nav link. `src/pages/HelpPage.tsx`.
+- [x] **Demanded salary field** (2026-06-05) — optional `Application.demandedSalary`
+      alongside the posted range; "Asking €185,000" badge on the card.
+- [x] **Euros + exact demanded salary** (2026-06-05) — all finances in € (was $);
+      demanded salary shown exactly (no rounding); range stays abbreviated
+      (`€120k–150k`). See `DECISIONS.md` D11.
 
 ## Test inventory (16 tests)
 
@@ -57,6 +62,8 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
   offsets, and the total-zero case.
 - `src/pages/HelpPage.test.tsx` — the page title and every section heading
   render.
+- `src/utils/format.test.ts` — `formatMoney` (exact thousands, rounding) +
+  `formatSalary` range regression.
 - `src/pages/BoardPage.test.tsx` — renders default columns + seeded cards; add an
   application through the modal persists to the store.
 - `src/pages/DashboardPage.test.tsx` — all four widgets render; the stale seeded
