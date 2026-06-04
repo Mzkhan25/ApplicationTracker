@@ -427,3 +427,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Vite / Node build output (added for this project)
+dist/
+dist-ssr/
+*.local
+node_modules/.tmp/
