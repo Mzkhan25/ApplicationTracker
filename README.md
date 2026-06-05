@@ -21,6 +21,10 @@ Tailwind CSS.
   interface so a backend can be added later without touching the UI.
 - **In-app "How to use" page** — `/help` documents every feature for end users.
 
+## Live demo
+
+Deployed to GitHub Pages: **https://mzkhan25.github.io/ApplicationTracker/**
+
 ## Getting started
 
 ```bash
@@ -37,6 +41,14 @@ npm run dev      # start the dev server (http://localhost:5173)
 | `npm run preview`| Preview the production build             |
 | `npm test`       | Run the unit/component tests (Vitest)    |
 | `npm run lint`   | Lint the codebase (ESLint)               |
+
+## Deployment
+
+Push to `main` automatically deploys to GitHub Pages via the
+`.github/workflows/deploy.yml` pipeline (lint → test → build → deploy).
+
+**One-time setup:** In the GitHub repo go to **Settings → Pages → Source** and
+select **GitHub Actions**.
 
 ## Architecture
 
