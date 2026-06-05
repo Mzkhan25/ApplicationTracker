@@ -81,6 +81,7 @@ export function createSeedData(): TrackerData {
       workMode: 'remote',
       salaryMin: 130000,
       salaryMax: 150000,
+      demandedSalary: 152000,
       notes: 'Recruiter call went well.',
       createdAt: isoDaysAgo(8),
       updatedAt: isoDaysAgo(12), // stale → shows in follow-ups
@@ -95,6 +96,7 @@ export function createSeedData(): TrackerData {
       priority: 'low',
       location: 'Austin, TX',
       workMode: 'onsite',
+      demandedSalary: 108000,
       createdAt: isoDaysAgo(3),
       updatedAt: isoDaysAgo(3),
     },

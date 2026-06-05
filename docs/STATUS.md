@@ -13,9 +13,10 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
 | Gate            | Status | Notes                                        |
 | --------------- | ------ | -------------------------------------------- |
 | `npm run lint`  | ✅ pass | 0 problems                                   |
-| `npm run build` | ✅ pass | tsc strict + Vite build                      |
+| `npm run build` | ✅ pass | tsc strict + Vite, assets at `/ApplicationTracker/` |
 | `npm test`      | ✅ pass | 26 tests, 8 files                            |
 | `npm run dev`   | ✅ runs | `/`, `/board`, `/favicon.svg` → HTTP 200     |
+| GitHub Actions  | ✅ ready | `.github/workflows/deploy.yml` created       |
 
 ## Completed
 
@@ -43,10 +44,16 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
 - [x] **"How to use" page** (2026-06-05) — in-app `/help` page documenting every
       feature; "How to use" nav link. `src/pages/HelpPage.tsx`.
 - [x] **Demanded salary field** (2026-06-05) — optional `Application.demandedSalary`
-      alongside the posted range; "Asking €185,000" badge on the card.
+      alongside the posted range; "Asking €185,000" badge on the card. All four
+      seeded samples carry one; HelpPage documents it.
 - [x] **Euros + exact demanded salary** (2026-06-05) — all finances in € (was $);
       demanded salary shown exactly (no rounding); range stays abbreviated
       (`€120k–150k`). See `DECISIONS.md` D11.
+- [x] **GitHub Pages CI/CD** (2026-06-05) — `.github/workflows/deploy.yml`
+      (lint → test → build → deploy-pages on push to `main`); Vite `base` path;
+      BrowserRouter `basename`; `public/404.html` SPA redirect; `index.html`
+      decode script. See `DECISIONS.md` D12. Live at
+      `https://mzkhan25.github.io/ApplicationTracker/` once Pages is enabled.
 
 ## Test inventory (16 tests)
 
@@ -88,8 +95,9 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
 
 ## Suggested next steps (pick up here)
 
-1. **Commit the initial implementation** — repo currently has uncommitted work
-   (only `b5cb91e Initial commit` exists; everything added since is unstaged).
+1. **Enable GitHub Pages** (one-time manual step): repo Settings → Pages →
+   Source = **GitHub Actions**. Then push to `main` — the workflow deploys
+   automatically. URL: `https://mzkhan25.github.io/ApplicationTracker/`
 2. Optional: add E2E coverage (Playwright) for the drag-to-move-and-persist flow.
 3. Optional: stage `category` + true conversion funnel (revisits D2) if the user
    wants win/loss analytics.

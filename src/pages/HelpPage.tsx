@@ -83,6 +83,9 @@ export default function HelpPage() {
             <h3 className="mb-1 font-semibold text-slate-700">
               Fields on a card
             </h3>
+            <p className="mb-1 text-slate-500">
+              All amounts are shown in euros (€).
+            </p>
             <ul className="ml-4 list-disc space-y-1.5">
               <Step>
                 <strong className="text-slate-700">Company / Role</strong> —

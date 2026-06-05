@@ -3,6 +3,29 @@
 Newest first. One bullet per meaningful change. Add an entry whenever you change
 behavior, structure, or dependencies (see the documentation rule in `CLAUDE.md`).
 
+## 2026-06-05 — GitHub Pages CI/CD pipeline
+
+- Added `.github/workflows/deploy.yml`: push to `main` runs lint → test → build,
+  then uploads `dist/` and deploys to GitHub Pages via the official Actions.
+- `vite.config.ts`: production `base` set to `/ApplicationTracker/`; dev stays
+  at `/` so local `npm run dev` is unaffected.
+- `src/main.tsx`: `BrowserRouter` now reads `basename` from
+  `import.meta.env.BASE_URL` so routes resolve under the Pages subpath.
+- `index.html`: added SPA decode script — restores deep-link paths that
+  `404.html` encoded into a query string before the app boots.
+- `public/404.html`: rafrex SPA redirect trick (`pathSegmentsToKeep = 1`);
+  included in `dist/` automatically via Vite's `public/` copy.
+- One-time manual step: Settings → Pages → Source = **GitHub Actions**.
+
+## 2026-06-05 — Seed demanded salary everywhere + help currency note
+
+- All four seeded sample applications now carry a `demandedSalary` (Globex,
+  Initech added; Initech intentionally has one with no posted range, to show the
+  badge standing alone).
+- HelpPage: added an "all amounts are shown in euros (€)" note to the card-fields
+  section (the rest of the page already reflects the donut, per-stage reminders,
+  demanded salary, and euros).
+
 ## 2026-06-05 — Euros + exact demanded salary
 
 - **Change:** All finances now display in **euros (€)** instead of dollars.

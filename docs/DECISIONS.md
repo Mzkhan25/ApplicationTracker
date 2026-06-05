@@ -177,3 +177,53 @@ Tradeoff: no built-in hover tooltips/animation (acceptable for this widget).
 **Alternatives rejected:** Keep the funnel bars (redundant with StageCounts).
 Add a chart library (heavy for one small static chart). A *true* cumulative
 conversion funnel (needs stage win/lost semantics — blocked by D2).
+
+---
+
+## D11 — Money is euros; demanded salary is exact, the range is abbreviated
+
+**Decision:** All money displays in euros (€) via `Intl.NumberFormat('en-IE',
+{ currency: 'EUR' })`. The **demanded salary** is shown in full (`€185,000`,
+no rounding). The posted **salary range** stays abbreviated to thousands
+(`€120k–150k`).
+
+**Why:** Per user request — euros, and don't round the demanded salary (it's the
+specific number you're negotiating, so precision matters). The posted range is a
+rough band where abbreviation aids scannability and the user didn't ask to change
+it, so it stays compact — only the currency symbol changed there.
+
+**Why `en-IE` locale:** Produces the `€` symbol as a prefix with comma grouping
+(`€185,000`) and is deterministic across environments (doesn't depend on the
+runtime's default locale), which keeps the unit tests stable.
+
+**Note:** If consistency is later preferred, `formatSalary` can be switched to
+exact euros too — it's a one-function change. Helpers live in
+`src/utils/format.ts` (`formatMoney` exact, `formatSalary` range).
+
+---
+
+## D12 — GitHub Pages deployment: clean URLs + 404 redirect trick
+
+**Decision:** Deployed as a GitHub Pages *project site* at
+`https://mzkhan25.github.io/ApplicationTracker/`. Uses `BrowserRouter` (clean
+URLs) not `HashRouter`, with the rafrex SPA-on-GitHub-Pages redirect technique
+to survive hard refreshes on deep links.
+
+**Why clean URLs over HashRouter:** Hash-based routing (`#/board`) is visually
+noisy and breaks URL sharing expectations. The 404-redirect technique is a
+well-established workaround (used by many SPAs on GitHub Pages) with negligible
+complexity cost.
+
+**Key pieces:**
+1. `vite.config.ts` — `base: '/ApplicationTracker/'` on `build`, `'/'` on `dev`.
+2. `src/main.tsx` — `basename={import.meta.env.BASE_URL.replace(/\/$/, '')}` so
+   the router knows the subpath.
+3. `public/404.html` — encodes the requested path into a query string
+   (`?/board`), then redirects to `index.html`.
+4. `index.html` — decodes the query string back to the real path via
+   `window.history.replaceState` before React boots.
+5. `.github/workflows/deploy.yml` — lint → test → build → upload artifact →
+   deploy-pages; requires `pages: write` + `id-token: write` permissions.
+
+**Alternatives rejected:** HashRouter (ugly URLs). Netlify/Vercel (not
+requested; GitHub Pages is free and sufficient for a static SPA).
