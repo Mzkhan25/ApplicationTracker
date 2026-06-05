@@ -433,3 +433,4 @@ dist/
 dist-ssr/
 *.local
 node_modules/.tmp/
+.worktrees/
