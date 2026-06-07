@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Tracker — Redesign Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #060d1c;
+      --bg-card:     #0c1528;
+      --bg-elevated: #111e36;
+      --bg-input:    #0a1322;
+
+      --border:       rgba(148,163,184,0.07);
+      --border-hi:    rgba(148,163,184,0.14);
+
+      --txt:      #e2e8f0;
+      --txt-2:    #94a3b8;
+      --txt-3:    #4b5e78;
+      --txt-dim:  #2d3f58;
+
+      --cyan:      #06b6d4;
+      --cyan-dim:  rgba(6,182,212,0.10);
+      --cyan-glow: rgba(6,182,212,0.28);
+      --amber:     #f59e0b;
+      --amber-dim: rgba(245,158,11,0.10);
+
+      --r-sm: 6px; --r: 10px; --r-lg: 14px; --r-xl: 18px;
+
+      --ff-d: 'Sora', sans-serif;
+      --ff:   'Inter', sans-serif;
+    }
+
+    html, body, #root { height: 100%; }
+
+    body {
+      font-family: var(--ff);
+      background-color: var(--bg);
+      color: var(--txt);
+      -webkit-font-smoothing: antialiased;
+      /* atmospheric dot-grid */
+      background-image:
+        radial-gradient(ellipse 900px 500px at 50% -80px, rgba(6,182,212,0.045), transparent),
+        radial-gradient(circle at 1px 1px, rgba(148,163,184,0.045) 1px, transparent 0);
+      background-size: auto, 28px 28px;
+    }
+
+    /* ── LOADING ── */
+    .loading {
+      height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px;
+    }
+    .loading-dots { display: flex; gap: 8px; }
+    .loading-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--cyan); animation: pop 0.9s ease-in-out infinite;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.15s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes pop { 0%,100%{opacity:.3;transform:scale(.7)} 50%{opacity:1;transform:scale(1.2)} }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .card-hd {
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title {
+      font-family: var(--ff-d); font-size: 12px; font-weight: 600;
+      color: var(--txt-3); text-transform: uppercase; letter-spacing: .09em;
+    }
+    .card-body { padding: 20px; }
+
+    /* ── STAT TILE ── */
+    .tile {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 20px 22px 18px;
+      position: relative; overflow: hidden;
+      transition: border-color .2s, transform .2s;
+      cursor: default;
+    }
+    .tile:hover { border-color: var(--border-hi); transform: translateY(-1px); }
+    .tile-bar {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    }
+    .tile-lbl {
+      font-size: 10px; font-weight: 600; letter-spacing: .11em;
+      text-transform: uppercase; color: var(--txt-3);
+    }
+    .tile-val {
+      font-family: var(--ff-d); font-size: 34px; font-weight: 800;
+      line-height: 1.1; margin-top: 6px;
+    }
+    .tile-hint { font-size: 11px; color: var(--txt-3); margin-top: 4px; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 100px;
+      font-size: 11px; font-weight: 500; white-space: nowrap;
+    }
+
+    /* ── NAV ── */
+    .nav-btn {
+      font-family: var(--ff); font-size: 13px; font-weight: 500;
+      color: var(--txt-3); background: none; border: none; border-bottom: 2px solid transparent;
+      padding: 6px 2px; cursor: pointer; transition: color .2s, border-color .2s;
+    }
+    .nav-btn.active { color: var(--txt); border-bottom-color: var(--cyan); }
+    .nav-btn:hover:not(.active) { color: var(--txt-2); }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; background: var(--cyan); color: #041018;
+      font-family: var(--ff-d); font-size: 13px; font-weight: 700;
+      border-radius: var(--r); border: none; cursor: pointer; transition: all .2s;
+    }
+    .btn-primary:hover { background: #22d3ee; box-shadow: 0 0 20px var(--cyan-glow); }
+
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; background: transparent; color: var(--cyan);
+      font-family: var(--ff-d); font-size: 13px; font-weight: 600;
+      border-radius: var(--r); border: 1px solid rgba(6,182,212,.35); cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-outline:hover { background: var(--cyan-dim); box-shadow: 0 0 14px var(--cyan-glow); }
+
+    .btn-sm {
+      padding: 4px 10px; font-size: 11px; font-weight: 600;
+      font-family: var(--ff); background: var(--amber-dim);
+      color: var(--amber); border: 1px solid rgba(245,158,11,.2);
+      border-radius: var(--r-sm); cursor: pointer; transition: all .2s;
+    }
+    .btn-sm:hover { background: rgba(245,158,11,.18); }
+
+    /* ── ACTIVITY / FOLLOWUP ── */
+    .list-row {
+      padding: 13px 0; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .list-row:last-child { border-bottom: none; }
+
+    .list-avatar {
+      width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--ff-d); font-size: 13px; font-weight: 700;
+    }
+
+    /* ── KANBAN ── */
+    .k-col {
+      width: 280px; flex-shrink: 0;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--r-xl); display: flex; flex-direction: column; overflow: hidden;
+    }
+    .k-col-bar { height: 3px; }
+    .k-col-hd {
+      padding: 13px 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .k-col-name {
+      font-family: var(--ff-d); font-size: 13px; font-weight: 600;
+      color: var(--txt-2); flex: 1; min-width: 0;
+    }
+    .k-count {
+      font-size: 11px; font-weight: 600; padding: 1px 7px;
+      border-radius: 100px; background: rgba(148,163,184,.08); color: var(--txt-3);
+    }
+    .k-kebab {
+      width: 24px; height: 24px; background: none; border: none;
+      border-radius: 5px; color: var(--txt-3); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, color .2s; flex-shrink: 0;
+    }
+    .k-kebab:hover { background: rgba(148,163,184,.1); color: var(--txt-2); }
+
+    .app-card {
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 13px 13px 13px 16px;
+      position: relative; overflow: hidden; cursor: pointer;
+      transition: border-color .18s, transform .15s;
+    }
+    .app-card:hover { border-color: var(--border-hi); transform: translateY(-1px); }
+    .app-card-stripe {
+      position: absolute; top: 0; left: 0; bottom: 0; width: 3px; border-radius: 2px 0 0 2px;
+    }
+    .app-co {
+      font-family: var(--ff-d); font-size: 13px; font-weight: 700; color: var(--txt);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .app-role {
+      font-size: 12px; color: var(--txt-2); margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .app-meta {
+      font-size: 11px; color: var(--txt-3); margin-top: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .add-btn {
+      width: 100%; padding: 8px; background: none; font-family: var(--ff); font-size: 12px;
+      color: var(--txt-3); cursor: pointer; transition: all .2s;
+      border: 1px dashed rgba(148,163,184,.12); border-radius: var(--r-sm);
+    }
+    .add-btn:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+
+    .empty-col {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      color: var(--txt-dim); font-size: 12px; min-height: 60px;
+      border: 1px dashed rgba(148,163,184,.07); border-radius: var(--r); margin: 4px 0;
+    }
+
+    /* ── GRID ── */
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+    @media(max-width:900px){.g2{grid-template-columns:1fr;} .g4{grid-template-columns:1fr 1fr;}}
+    @media(max-width:560px){.g4{grid-template-columns:1fr 1fr;}}
+
+    /* ── FADE ── */
+    .fade { animation: fadeUp .28s ease both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(148,163,184,.15);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(148,163,184,.25)}
+  </style>
+</head>
+
+<body>
+  <div id="root">
+    <div class="loading">
+      <div class="loading-dots">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      </div>
+      <span style="font-family:'Sora',sans-serif;font-size:13px;color:#4b5e78">Loading mockup…</span>
+    </div>
+  </div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // ── DATA ──────────────────────────────────────────────────────────────────
+    const STAGES = [
+      { id:'s1', name:'Applied',      color:'#3b82f6', followUpDays:14 },
+      { id:'s2', name:'Phone Screen', color:'#8b5cf6', followUpDays:7  },
+      { id:'s3', name:'Interview',    color:'#f59e0b', followUpDays:5  },
+      { id:'s4', name:'Offer',        color:'#10b981'                  },
+      { id:'s5', name:'Rejected',     color:'#ef4444'                  },
+    ];
+
+    const T = Date.now();
+    const ago = (n) => new Date(T - n * 86400000);
+    const isoAgo = (n) => ago(n).toISOString();
+    const dateAgo = (n) => isoAgo(n).slice(0,10);
+
+    const APPS = [
+      { id:'a1', company:'Acme Corp',  role:'Senior Frontend Engineer', stageId:'s3',
+        priority:'high',   location:'San Francisco, CA', workMode:'hybrid',
+        salaryMin:160000, salaryMax:190000, demandedSalary:185000,
+        appliedDate:dateAgo(14), updatedAt:isoAgo(2) },
+      { id:'a2', company:'Globex',     role:'Full Stack Developer',      stageId:'s2',
+        priority:'medium', location:'Remote',            workMode:'remote',
+        salaryMin:130000, salaryMax:150000, demandedSalary:152000,
+        appliedDate:dateAgo(8),  updatedAt:isoAgo(12) },
+      { id:'a3', company:'Initech',    role:'React Engineer',            stageId:'s1',
+        priority:'low',    location:'Austin, TX',        workMode:'onsite',
+        demandedSalary:108000,
+        appliedDate:dateAgo(3),  updatedAt:isoAgo(3) },
+      { id:'a4', company:'Umbrella',   role:'UI Engineer',               stageId:'s4',
+        priority:'high',   location:'Remote',            workMode:'remote',
+        salaryMin:145000, salaryMax:170000, demandedSalary:168000,
+        appliedDate:dateAgo(30), updatedAt:isoAgo(1) },
+    ];
+
+    // ── DERIVED ───────────────────────────────────────────────────────────────
+    const byStage = new Map(STAGES.map(s => [s.id, s]));
+    const stageCount = {};
+    APPS.forEach(a => { stageCount[a.stageId] = (stageCount[a.stageId]||0)+1; });
+
+    const total       = APPS.length;
+    const responseRate = Math.round(APPS.filter(a=>a.stageId!=='s1').length / total * 100);
+    const companies   = new Set(APPS.map(a=>a.company)).size;
+    const followUps   = APPS.filter(a=>{
+      const s = byStage.get(a.stageId);
+      if (!s?.followUpDays) return false;
+      return (T - new Date(a.updatedAt).getTime()) / 86400000 >= s.followUpDays;
+    });
+    const recent = [...APPS].sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
+
+    // ── HELPERS ───────────────────────────────────────────────────────────────
+    const fmtK = n => n >= 1000 ? `€${Math.round(n/1000)}k` : `€${n}`;
+    const fmtExact = n => `€${n.toLocaleString()}`;
+    const wm = { remote:'Remote', hybrid:'Hybrid', onsite:'On-site' };
+    const priColor = { high:'#f87171', medium:'#fbbf24', low:'#64748b' };
+
+    const relDay = iso => {
+      const d = Math.round((T - new Date(iso).getTime()) / 86400000);
+      if (d === 0) return 'Today';
+      if (d === 1) return 'Yesterday';
+      return `${d}d ago`;
+    };
+    const fmtDate = iso =>
+      new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+    // ── ECHARTS: PIPELINE DONUT ───────────────────────────────────────────────
+    function PipelineDonut() {
+      const ref = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        if (!ref.current) return;
+        chartRef.current = echarts.init(ref.current);
+
+        const segments = STAGES
+          .map(s=>({ name:s.name, value:stageCount[s.id]||0, color:s.color }))
+          .filter(d=>d.value>0);
+
+        chartRef.current.setOption({
+          backgroundColor:'transparent',
+          tooltip:{
+            trigger:'item',
+            confine:true,
+            position:(point, _params, _dom, _rect, size) => {
+              const [x, y] = point;
+              const [cw] = size.viewSize;
+              // always show to the right of cursor; flip left if near right edge
+              const left = x + size.contentSize[0] + 20 < cw ? x + 14 : x - size.contentSize[0] - 14;
+              return [left, y - 20];
+            },
+            backgroundColor:'#0c1528',
+            borderColor:'rgba(148,163,184,0.14)',
+            textStyle:{ color:'#e2e8f0', fontFamily:'Inter', fontSize:12 },
+            formatter:'{b}: <b>{c}</b> ({d}%)',
+            extraCssText:'border-radius:8px;padding:10px 14px;',
+          },
+          series:[{
+            type:'pie',
+            radius:['52%','72%'],
+            center:['50%','50%'],
+            avoidLabelOverlap:false,
+            label:{ show:false },
+            labelLine:{ show:false },
+            itemStyle:{ borderRadius:3, borderWidth:2, borderColor:'transparent' },
+            emphasis:{ scale:true, scaleSize:5, itemStyle:{ shadowBlur:20 } },
+            data:segments.map(d=>({
+              name:d.name, value:d.value,
+              itemStyle:{ color:d.color, shadowBlur:14, shadowColor:d.color+'55' },
+            })),
+          }],
+          graphic:[
+            { type:'text', left:'center', top:'center',
+              style:{ text:String(total), textAlign:'center',
+                fontSize:28, fontWeight:800, fontFamily:'Sora', fill:'#e2e8f0', y:5 } },
+          ],
+        });
+
+        const onResize = () => chartRef.current?.resize();
+        window.addEventListener('resize', onResize);
+        return () => { chartRef.current?.dispose(); window.removeEventListener('resize', onResize); };
+      }, []);
+
+      const legend = STAGES.filter(s=>(stageCount[s.id]||0)>0);
+
+      return (
+        <div style={{display:'flex',alignItems:'center',gap:20}}>
+          <div ref={ref} style={{width:160,height:160,flexShrink:0}} />
+          <ul style={{flex:1,display:'flex',flexDirection:'column',gap:10}}>
+            {legend.map(s=>{
+              const cnt = stageCount[s.id]||0;
+              return (
+                <li key={s.id} style={{display:'flex',alignItems:'center',gap:9}}>
+                  <span style={{
+                    width:8,height:8,borderRadius:'50%',flexShrink:0,
+                    background:s.color,boxShadow:`0 0 6px ${s.color}80`,
+                  }}/>
+                  <span style={{flex:1,fontSize:12,color:'#94a3b8',fontFamily:'Inter',minWidth:0}}>
+                    {s.name}
+                  </span>
+                  <span style={{fontFamily:'Sora',fontSize:13,fontWeight:700,color:'#e2e8f0'}}>
+                    {cnt}
+                  </span>
+                  <span style={{width:34,textAlign:'right',fontSize:11,color:'#4b5e78'}}>
+                    {Math.round(cnt/total*100)}%
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      );
+    }
+
+    // ── ECHARTS: STAGE BAR CHART ──────────────────────────────────────────────
+    function StageBarChart() {
+      const ref = useRef(null);
+      const chartRef = useRef(null);
+
+      useEffect(() => {
+        if (!ref.current) return;
+        chartRef.current = echarts.init(ref.current);
+
+        const reversed = [...STAGES].reverse();
+
+        chartRef.current.setOption({
+          backgroundColor:'transparent',
+          grid:{ left:12, right:24, top:8, bottom:8, containLabel:true },
+          tooltip:{
+            trigger:'axis', axisPointer:{type:'none'},
+            backgroundColor:'#0c1528', borderColor:'rgba(148,163,184,0.14)',
+            textStyle:{ color:'#e2e8f0', fontFamily:'Inter', fontSize:12 },
+            extraCssText:'border-radius:8px;padding:10px 14px;',
+          },
+          xAxis:{
+            type:'value', minInterval:1,
+            axisLine:{ show:false }, axisTick:{ show:false },
+            axisLabel:{ color:'#2d3f58', fontSize:11, fontFamily:'Inter',
+              formatter: v => Number.isInteger(v) ? v : '' },
+            splitLine:{ lineStyle:{ color:'rgba(148,163,184,0.05)', type:'dashed' } },
+          },
+          yAxis:{
+            type:'category',
+            data:reversed.map(s=>s.name),
+            axisLine:{ show:false }, axisTick:{ show:false },
+            axisLabel:{ color:'#94a3b8', fontSize:12, fontFamily:'Inter' },
+          },
+          series:[{
+            type:'bar', barWidth:12,
+            data:reversed.map(s=>({
+              value:stageCount[s.id]||0,
+              itemStyle:{ color:s.color, borderRadius:[0,4,4,0],
+                shadowBlur:10, shadowColor:s.color+'44' },
+            })),
+            emphasis:{ itemStyle:{ shadowBlur:18 } },
+            label:{
+              show:true, position:'right',
+              color:'#4b5e78', fontFamily:'Inter', fontSize:11,
+              formatter:({value})=> value===0?'':value,
+            },
+          }],
+        });
+
+        const onResize = () => chartRef.current?.resize();
+        window.addEventListener('resize', onResize);
+        return () => { chartRef.current?.dispose(); window.removeEventListener('resize', onResize); };
+      }, []);
+
+      return <div ref={ref} style={{width:'100%',height:190}} />;
+    }
+
+    // ── UI PRIMITIVES ─────────────────────────────────────────────────────────
+    function Badge({ children, color, bg }) {
+      return (
+        <span className="badge" style={{
+          color: color||'#94a3b8',
+          background: bg||'rgba(148,163,184,0.08)',
+        }}>
+          {children}
+        </span>
+      );
+    }
+
+    function StatTile({ label, value, hint, accent }) {
+      return (
+        <div className="tile">
+          <div className="tile-lbl">{label}</div>
+          <div className="tile-val" style={{color:accent}}>{value}</div>
+          {hint && <div className="tile-hint">{hint}</div>}
+          <div className="tile-bar"
+            style={{background:`linear-gradient(90deg,${accent},transparent)`}}
+          />
+        </div>
+      );
+    }
+
+    // ── BOARD COMPONENTS ──────────────────────────────────────────────────────
+    function AppCard({ app }) {
+      const salary = app.salaryMin&&app.salaryMax
+        ? `${fmtK(app.salaryMin)}–${fmtK(app.salaryMax)}`
+        : null;
+      const pc = priColor[app.priority]||'#64748b';
+
+      return (
+        <div className="app-card">
+          <div className="app-card-stripe"
+            style={{background:pc, boxShadow:`0 0 8px ${pc}55`}}
+          />
+          <div style={{display:'flex',justifyContent:'space-between',gap:8}}>
+            <div style={{minWidth:0,flex:1}}>
+              <div className="app-co">{app.company}</div>
+              <div className="app-role">{app.role}</div>
+            </div>
+            <span style={{color:'#2d3f58',fontSize:15,cursor:'grab',paddingLeft:4,flexShrink:0}}>
+              ⠿
+            </span>
+          </div>
+
+          <div style={{marginTop:10,display:'flex',flexWrap:'wrap',gap:5}}>
+            <Badge color={pc} bg={pc+'18'}>
+              {app.priority.charAt(0).toUpperCase()+app.priority.slice(1)}
+            </Badge>
+            {app.workMode && (
+              <Badge color="#64748b" bg="rgba(100,116,139,0.10)">{wm[app.workMode]}</Badge>
+            )}
+            {salary && (
+              <Badge color="#64748b" bg="rgba(100,116,139,0.10)">{salary}</Badge>
+            )}
+            {app.demandedSalary != null && (
+              <Badge color="#06b6d4" bg="rgba(6,182,212,0.10)">
+                Asking {fmtExact(app.demandedSalary)}
+              </Badge>
+            )}
+          </div>
+
+          <div className="app-meta">
+            <span>Applied {fmtDate(app.appliedDate)}</span>
+            {app.location && <span style={{maxWidth:120,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{app.location}</span>}
+          </div>
+        </div>
+      );
+    }
+
+    function KanbanCol({ stage, apps }) {
+      return (
+        <div className="k-col">
+          <div className="k-col-bar"
+            style={{background:stage.color, boxShadow:`0 0 12px ${stage.color}55`}}
+          />
+          <div className="k-col-hd">
+            <span style={{
+              width:8,height:8,borderRadius:'50%',flexShrink:0,
+              background:stage.color, boxShadow:`0 0 6px ${stage.color}80`,
+            }}/>
+            <span className="k-col-name">{stage.name}</span>
+            {stage.followUpDays && (
+              <span className="badge" style={{
+                color:'#f59e0b',background:'rgba(245,158,11,0.12)',
+                fontSize:10,gap:3,
+              }}>
+                ⏰{stage.followUpDays}d
+              </span>
+            )}
+            <span className="k-count">{apps.length}</span>
+            <button className="k-kebab" title="Column options">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                <circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/>
+                <circle cx="10" cy="16" r="1.5"/>
+              </svg>
+            </button>
+          </div>
+
+          <div style={{flex:1,padding:'0 12px 14px',display:'flex',flexDirection:'column',gap:8}}>
+            {apps.length===0
+              ? <div className="empty-col">No applications</div>
+              : apps.map(a=><AppCard key={a.id} app={a}/>)
+            }
+            <button className="add-btn">+ Add application</button>
+          </div>
+        </div>
+      );
+    }
+
+    // ── PAGES ─────────────────────────────────────────────────────────────────
+    function DashboardPage({ onBoard }) {
+      return (
+        <div className="fade" style={{display:'flex',flexDirection:'column',gap:20}}>
+
+          {/* Header row */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12}}>
+            <div>
+              <h1 style={{fontFamily:'Sora',fontSize:22,fontWeight:800,color:'#e2e8f0'}}>
+                Dashboard
+              </h1>
+              <p style={{fontSize:13,color:'#4b5e78',marginTop:3}}>
+                Overview of your job search pipeline
+              </p>
+            </div>
+            <button className="btn-outline" onClick={onBoard}>Open board →</button>
+          </div>
+
+          {/* Stat tiles */}
+          <div className="g4">
+            <StatTile label="Applications"   value={total}           accent="#3b82f6"/>
+            <StatTile label="Response Rate"  value={`${responseRate}%`} hint="moved past first stage" accent="#8b5cf6"/>
+            <StatTile label="Companies"      value={companies}       accent="#06b6d4"/>
+            <StatTile label="Follow-ups Due" value={followUps.length} hint="past stage window" accent="#f59e0b"/>
+          </div>
+
+          {/* Charts */}
+          <div className="g2">
+            <div className="card">
+              <div className="card-hd">
+                <span className="card-title">Pipeline Breakdown</span>
+              </div>
+              <div className="card-body"><PipelineDonut/></div>
+            </div>
+
+            <div className="card">
+              <div className="card-hd">
+                <span className="card-title">Applications by Stage</span>
+              </div>
+              <div className="card-body"><StageBarChart/></div>
+            </div>
+          </div>
+
+          {/* Lists */}
+          <div className="g2">
+            {/* Recent activity */}
+            <div className="card">
+              <div className="card-hd"><span className="card-title">Recent Activity</span></div>
+              <div style={{padding:'0 20px'}}>
+                {recent.map(app=>{
+                  const s = byStage.get(app.stageId);
+                  return (
+                    <div key={app.id} className="list-row">
+                      <div className="list-avatar"
+                        style={{
+                          background:s?`${s.color}1a`:'rgba(148,163,184,0.08)',
+                          color:s?s.color:'#94a3b8',
+                        }}>
+                        {app.company[0]}
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontFamily:'Sora',fontSize:13,fontWeight:600,color:'#e2e8f0',
+                          whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                          {app.company}
+                        </div>
+                        <div style={{fontSize:12,color:'#4b5e78',
+                          whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                          {app.role}
+                        </div>
+                      </div>
+                      <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4,flexShrink:0}}>
+                        {s&&<Badge color={s.color} bg={s.color+'18'}>{s.name}</Badge>}
+                        <span style={{fontSize:11,color:'#4b5e78'}}>{relDay(app.updatedAt)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Follow-up reminders */}
+            <div className="card">
+              <div className="card-hd">
+                <span className="card-title">Follow-up Reminders</span>
+                {followUps.length>0&&(
+                  <Badge color="#f59e0b" bg="rgba(245,158,11,0.12)">{followUps.length} due</Badge>
+                )}
+              </div>
+              <div style={{padding:'0 20px'}}>
+                {followUps.length===0
+                  ? <div style={{padding:'28px 0',textAlign:'center',fontSize:13,color:'#4b5e78'}}>
+                      You're all caught up 🎉
+                    </div>
+                  : followUps.map(app=>{
+                      const s = byStage.get(app.stageId);
+                      return (
+                        <div key={app.id} className="list-row">
+                          <div className="list-avatar"
+                            style={{background:'rgba(245,158,11,0.10)',color:'#f59e0b'}}>
+                            ⏰
+                          </div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontFamily:'Sora',fontSize:13,fontWeight:600,color:'#e2e8f0',
+                              whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                              {app.company}
+                            </div>
+                            <div style={{fontSize:12,color:'#4b5e78'}}>
+                              {app.role}
+                              {s&&<span style={{color:s.color}}> · {s.name}</span>}
+                            </div>
+                          </div>
+                          <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:5,flexShrink:0}}>
+                            <span style={{fontSize:12,fontWeight:700,color:'#f59e0b'}}>
+                              {relDay(app.updatedAt)}
+                            </span>
+                            <button className="btn-sm">Done</button>
+                          </div>
+                        </div>
+                      );
+                    })
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function BoardPage() {
+      return (
+        <div className="fade" style={{display:'flex',flexDirection:'column',gap:20,flex:1}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:12,flexShrink:0}}>
+            <div>
+              <h1 style={{fontFamily:'Sora',fontSize:22,fontWeight:800,color:'#e2e8f0'}}>Board</h1>
+              <p style={{fontSize:13,color:'#4b5e78',marginTop:3}}>
+                Drag cards to move applications through your pipeline
+              </p>
+            </div>
+            <button className="btn-primary">+ Add column</button>
+          </div>
+
+          <div style={{display:'flex',gap:14,overflowX:'auto',paddingBottom:20,flex:1,alignItems:'flex-start'}}>
+            {STAGES.map(s=>(
+              <KanbanCol key={s.id} stage={s} apps={APPS.filter(a=>a.stageId===s.id)}/>
+            ))}
+            {/* ghost add-column */}
+            <div style={{
+              width:220,flexShrink:0,minHeight:80,
+              border:'1px dashed rgba(148,163,184,0.10)',
+              borderRadius:18,display:'flex',alignItems:'center',justifyContent:'center',
+              color:'#2d3f58',fontSize:13,cursor:'pointer',
+              fontFamily:'Inter',transition:'all .2s',
+            }}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(6,182,212,.25)';e.currentTarget.style.color='#06b6d4';}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(148,163,184,0.10)';e.currentTarget.style.color='#2d3f58';}}
+            >
+              + New column
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function HelpPage() {
+      const sections = [
+        { title:'Adding applications', body:'Go to Board → "+ Add application" under any column. Fill in company, role, and optional details like salary range and your demanded salary.' },
+        { title:'Moving applications', body:'Drag a card to move it between columns (stages). You can also reorder cards within a column to prioritise.' },
+        { title:'Follow-up reminders', body:'Each column has an optional follow-up window in days. When an application isn\'t updated within that window, it appears under "Follow-up Reminders" on the Dashboard.' },
+        { title:'Demanded salary', body:'Track the salary you\'re asking for, separate from the posted range. Shown as an "Asking €…" badge on the card and in the edit form.' },
+        { title:'Managing columns', body:'Use the ⋮ menu on any column to rename, move left/right, set a follow-up reminder, or delete it. Cards in a deleted column move to the first remaining column.' },
+      ];
+
+      return (
+        <div className="fade" style={{maxWidth:660,margin:'0 auto'}}>
+          <h1 style={{fontFamily:'Sora',fontSize:22,fontWeight:800,color:'#e2e8f0',marginBottom:8}}>
+            How to use
+          </h1>
+          <p style={{fontSize:13,color:'#4b5e78',marginBottom:28}}>
+            Everything you need to track your job search effectively.
+          </p>
+          {sections.map((sec,i)=>(
+            <div key={i} className="card" style={{marginBottom:12}}>
+              <div className="card-hd"><span className="card-title">{sec.title}</span></div>
+              <div className="card-body"
+                style={{fontSize:14,color:'#94a3b8',lineHeight:1.65,fontFamily:'Inter'}}>
+                {sec.body}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ── APP SHELL ─────────────────────────────────────────────────────────────
+    function Header({ page, setPage }) {
+      return (
+        <header style={{
+          position:'sticky',top:0,zIndex:100,
+          background:'rgba(6,13,28,0.82)',
+          backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
+          borderBottom:'1px solid rgba(148,163,184,0.07)',
+        }}>
+          {/* rainbow-ish top line */}
+          <div style={{
+            height:1,
+            background:'linear-gradient(90deg,transparent,#06b6d4 30%,#8b5cf6 60%,transparent)',
+            opacity:.55,
+          }}/>
+          <div style={{
+            maxWidth:1280,margin:'0 auto',padding:'0 24px',
+            height:56,display:'flex',alignItems:'center',justifyContent:'space-between',
+          }}>
+            {/* Logo */}
+            <div style={{display:'flex',alignItems:'center',gap:10,cursor:'default'}}>
+              <div style={{
+                width:30,height:30,borderRadius:8,flexShrink:0,
+                background:'linear-gradient(135deg,#06b6d4,#8b5cf6)',
+                display:'flex',alignItems:'center',justifyContent:'center',
+                fontFamily:'Sora',fontSize:11,fontWeight:800,color:'#fff',
+                boxShadow:'0 0 16px rgba(6,182,212,0.35)',
+              }}>AT</div>
+              <span style={{fontFamily:'Sora',fontSize:14,fontWeight:700,color:'#e2e8f0'}}>
+                Application Tracker
+              </span>
+            </div>
+
+            {/* Nav */}
+            <nav style={{display:'flex',gap:28,alignItems:'center'}}>
+              {[
+                ['dashboard','Dashboard'],
+                ['board','Board'],
+                ['help','How to use'],
+              ].map(([id,label])=>(
+                <button key={id}
+                  className={`nav-btn${page===id?' active':''}`}
+                  onClick={()=>setPage(id)}>
+                  {label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </header>
+      );
+    }
+
+    function App() {
+      const [page, setPage] = useState('dashboard');
+
+      return (
+        <div style={{display:'flex',flexDirection:'column',minHeight:'100vh'}}>
+          <Header page={page} setPage={setPage}/>
+          <main style={{
+            flex:1, maxWidth:1280, margin:'0 auto', width:'100%',
+            padding: page==='board' ? '24px 24px 0' : '24px',
+            display:'flex', flexDirection:'column',
+          }}>
+            {page==='dashboard' && <DashboardPage onBoard={()=>setPage('board')}/>}
+            {page==='board'     && <BoardPage/>}
+            {page==='help'      && <HelpPage/>}
+          </main>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
