@@ -2,21 +2,23 @@
 
 **Single source of truth for "where are we." Update this on every change.**
 
-_Last updated: 2026-06-05_
+_Last updated: 2026-06-07_
 
 ## Snapshot
 
-The initial implementation is **complete and green**, plus per-stage follow-up
-reminders (2026-06-05). A local-first job application tracker with an editable
-Kanban board and a dashboard is fully functional. All quality gates pass.
+Backend implementation **in progress** (Tasks 1–2 of 12 complete). The repo
+is now a monorepo (`client/` + `server/`). The frontend is unchanged and all
+quality gates still pass. The server package is scaffolded but no routes exist
+yet.
 
-| Gate            | Status | Notes                                        |
-| --------------- | ------ | -------------------------------------------- |
-| `npm run lint`  | ✅ pass | 0 problems                                   |
-| `npm run build` | ✅ pass | tsc strict + Vite, assets at `/ApplicationTracker/` |
-| `npm test`      | ✅ pass | 26 tests, 8 files                            |
-| `npm run dev`   | ✅ runs | `/`, `/board`, `/favicon.svg` → HTTP 200     |
-| GitHub Actions  | ✅ ready | `.github/workflows/deploy.yml` created       |
+| Gate                        | Status | Notes                                              |
+| --------------------------- | ------ | -------------------------------------------------- |
+| `npm run lint:client`       | ✅ pass | 0 problems                                         |
+| `npm run build:client`      | ✅ pass | tsc strict + Vite, assets at `/ApplicationTracker/` |
+| `npm run test:client`       | ✅ pass | 26 tests, 8 files                                  |
+| `npm run dev:client`        | ✅ runs | `/`, `/board`, `/favicon.svg` → HTTP 200           |
+| GitHub Actions              | ✅ ready | deploy.yml updated for `client/` working directory |
+| `server/` (build/test)      | 🔲 pending | no source files yet — scaffold only              |
 
 ## Completed
 
@@ -54,6 +56,14 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
       BrowserRouter `basename`; `public/404.html` SPA redirect; `index.html`
       decode script. See `DECISIONS.md` D12. Live at
       `https://mzkhan25.github.io/ApplicationTracker/` once Pages is enabled.
+- [x] **Monorepo reorganization** (2026-06-07) — all frontend files moved to
+      `client/`; root `package.json` replaced with convenience scripts
+      (`dev:client`, `build:client`, etc.); `deploy.yml` updated to run from
+      `client/` working directory. See plan Task 1.
+- [x] **Server package scaffolded** (2026-06-07) — `server/` directory created
+      with `package.json` (Hono, Drizzle, postgres.js, bcryptjs), `tsconfig.json`
+      (NodeNext/ESM, strict), `drizzle.config.ts`, `.env.example`. No source
+      files yet. See plan Task 2.
 
 ## Test inventory (16 tests)
 
@@ -93,7 +103,31 @@ Kanban board and a dashboard is fully functional. All quality gates pass.
 - Real backend + auth (the `TrackerRepository` seam is ready for it).
 - Swimlanes, multiple boards, attachments, import/export.
 
-## Suggested next steps (pick up here)
+## Backend implementation — remaining tasks (pick up here)
+
+Implementation plan: `docs/superpowers/plans/2026-06-07-backend-implementation.md`
+Spec: `docs/superpowers/specs/2026-06-07-backend-design.md`
+
+| Task | Description | Status |
+|------|-------------|--------|
+| 1 | Monorepo reorganization (move frontend → `client/`) | ✅ Done |
+| 2 | Scaffold `server/` package | ✅ Done |
+| 3 | DB schema (`server/src/db/schema.ts`) + Drizzle connection + `db:push` to Neon | 🔲 Next |
+| 4 | Server domain types (`server/src/types.ts`) | 🔲 Pending |
+| 5 | Auth routes — POST /api/auth/register + /api/auth/login | 🔲 Pending |
+| 6 | Data routes — GET + PUT /api/data (with transaction) | 🔲 Pending |
+| 7 | Hono app.ts + index.ts, CORS, JWT middleware, health, middleware tests | 🔲 Pending |
+| 8 | Client `ApiRepository` + tests | 🔲 Pending |
+| 9 | Client `useAuthStore` (Zustand persist) + `LoginPage` + tests | 🔲 Pending |
+| 10 | Wire `activeRepo` into `useAppStore`, update `App.tsx`, add `client/.env.example` | 🔲 Pending |
+| 11 | Logout button + username display in `NavBar` | 🔲 Pending |
+| 12 | Update all docs (STATUS, CHANGELOG, ARCHITECTURE, DECISIONS D13–D16, DEPLOYMENT.md) | 🔲 Pending |
+
+**Task 3 requires a live Neon connection string.** Before starting, create a free Neon
+project at https://console.neon.tech, copy the connection string, and create
+`server/.env` from `server/.env.example`.
+
+## Other suggested next steps (can do after backend)
 
 1. **Enable GitHub Pages** (one-time manual step): repo Settings → Pages →
    Source = **GitHub Actions**. Then push to `main` — the workflow deploys

@@ -3,6 +3,22 @@
 Newest first. One bullet per meaningful change. Add an entry whenever you change
 behavior, structure, or dependencies (see the documentation rule in `CLAUDE.md`).
 
+## 2026-06-07 — Backend scaffolding (Tasks 1–2)
+
+- **Monorepo reorganization** — all frontend source moved to `client/` via
+  `git mv`. Root `package.json` replaced with monorepo convenience scripts
+  (`dev:client`, `dev:server`, `build:client`, `build:server`, `test:client`,
+  `test:server`, `lint:client`, `lint:server`). `.gitignore` updated with
+  scoped `client/` and `server/` entries. `deploy.yml` updated: all build
+  steps now run with `working-directory: client` and artifact path set to
+  `./client/dist`. All 26 client tests still pass.
+- **Server package scaffolded** — `server/` directory added with
+  `package.json` (Hono 4, `@hono/node-server`, Drizzle ORM 0.44,
+  postgres.js, bcryptjs, dotenv), `tsconfig.json` (NodeNext/ESM, strict,
+  ES2022), `drizzle.config.ts` (points at `src/db/schema.ts`), and
+  `.env.example` (DATABASE_URL, JWT_SECRET, PORT, CLIENT_ORIGIN).
+  Dependencies installed (`server/node_modules/`). No source files yet.
+
 ## 2026-06-05 — GitHub Pages CI/CD pipeline
 
 - Added `.github/workflows/deploy.yml`: push to `main` runs lint → test → build,
