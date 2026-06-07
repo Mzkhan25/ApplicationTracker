@@ -428,8 +428,6 @@ FodyWeavers.xsd
 *.msp
 
 # Vite / Node build output (added for this project)
-node_modules/
-dist/
 client/dist/
 server/dist/
 dist-ssr/
