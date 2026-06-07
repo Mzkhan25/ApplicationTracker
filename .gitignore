@@ -432,6 +432,7 @@ client/dist/
 server/dist/
 dist-ssr/
 *.local
+node_modules/
 client/node_modules/
 server/node_modules/
 .worktrees/
