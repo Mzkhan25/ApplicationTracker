@@ -7,7 +7,7 @@ import type { Application, Stage, TrackerData } from '../types.js';
 export const dataRouter = new Hono();
 
 dataRouter.get('/', async (c) => {
-  const userId = c.get('jwtPayload').sub as string;
+  const userId = (c.get('jwtPayload') as { sub: string }).sub;
 
   const [stageRows, appRows, companyRows] = await Promise.all([
     db.select().from(stages).where(eq(stages.userId, userId)),
@@ -51,7 +51,7 @@ dataRouter.get('/', async (c) => {
 });
 
 dataRouter.put('/', async (c) => {
-  const userId = c.get('jwtPayload').sub as string;
+  const userId = (c.get('jwtPayload') as { sub: string }).sub;
   const body = await c.req.json<TrackerData>();
 
   await db.transaction(async (tx) => {
