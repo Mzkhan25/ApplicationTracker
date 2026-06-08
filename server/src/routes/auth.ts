@@ -7,6 +7,9 @@ import { users } from '../db/schema.js';
 
 export const authRouter = new Hono();
 
+// Pre-hashed dummy used to keep login timing constant whether or not the username exists
+const DUMMY_HASH = '$2a$10$abcdefghijklmnopqrstuvuuABCDEFGHIJKLMNOPQRSTUVWXYZ01234';
+
 function tokenExpiry() {
   return Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30;
 }
@@ -54,7 +57,8 @@ authRouter.post('/login', async (c) => {
     .where(eq(users.username, username))
     .limit(1);
 
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+  const passwordMatch = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+  if (!user || !passwordMatch) {
     return c.json({ error: 'Invalid credentials' }, 401);
   }
 
