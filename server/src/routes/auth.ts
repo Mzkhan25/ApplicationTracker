@@ -20,6 +20,10 @@ authRouter.post('/register', async (c) => {
     return c.json({ error: 'username and password required' }, 400);
   }
   const { username, password } = body;
+  // bcrypt silently truncates inputs > 72 bytes — reject rather than silently weaken
+  if (Buffer.byteLength(password, 'utf8') > 72) {
+    return c.json({ error: 'Password must be 72 characters or fewer' }, 400);
+  }
 
   const existing = await db
     .select({ id: users.id })
