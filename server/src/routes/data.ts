@@ -96,9 +96,10 @@ dataRouter.put('/', async (c) => {
       );
     }
 
-    if (body.applications.length > 0) {
+    const appsToInsert = body.applications.filter((a) => companyMap.has(a.company));
+    if (appsToInsert.length > 0) {
       await tx.insert(applications).values(
-        body.applications.map((a) => ({
+        appsToInsert.map((a) => ({
           id: a.id,
           userId,
           companyId: companyMap.get(a.company)!,
