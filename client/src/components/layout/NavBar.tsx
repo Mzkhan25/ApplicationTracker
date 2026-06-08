@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const LINKS = [
   { to: '/', label: 'Dashboard', end: true },
@@ -7,6 +8,9 @@ const LINKS = [
 ];
 
 export function NavBar() {
+  const logout = useAuthStore((s) => s.logout);
+  const username = useAuthStore((s) => s.username);
+
   return (
     <nav className="flex items-center gap-1">
       {LINKS.map((link) => (
@@ -25,6 +29,17 @@ export function NavBar() {
           {link.label}
         </NavLink>
       ))}
+      <div className="ml-auto flex items-center gap-3">
+        {username && (
+          <span className="text-sm text-slate-500">{username}</span>
+        )}
+        <button
+          onClick={logout}
+          className="text-sm text-slate-500 hover:text-slate-800"
+        >
+          Sign out
+        </button>
+      </div>
     </nav>
   );
 }
