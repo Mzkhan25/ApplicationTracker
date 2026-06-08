@@ -3,7 +3,38 @@
 How the Application Tracker is structured. Pair this with `DECISIONS.md` (why)
 and `STATUS.md` (current state).
 
-## Layered design
+The repo is a monorepo: `client/` holds the React SPA and `server/` holds the
+Hono API server. They share no code — types are duplicated intentionally to keep
+the two packages independently deployable.
+
+## Server Architecture
+
+```
+HTTP request
+  → Hono router (app.ts)
+    → CORS middleware
+      → JWT middleware (verifies Bearer token, attaches payload to context)
+        → Route handler
+          → Drizzle ORM query
+            → Neon (PostgreSQL)
+```
+
+### Server file map
+
+| File | Purpose |
+|---|---|
+| `server/src/index.ts` | Entry point — starts @hono/node-server |
+| `server/src/app.ts` | Hono app factory — CORS, JWT middleware, route wiring |
+| `server/src/routes/auth.ts` | POST /register, POST /login, DELETE /account |
+| `server/src/routes/data.ts` | GET /api/data, PUT /api/data |
+| `server/src/db/schema.ts` | Drizzle table definitions (users, companies, stages, applications) |
+| `server/src/db/index.ts` | postgres.js + Drizzle client |
+| `server/src/types.ts` | Domain types mirroring client (Stage, Application, TrackerData) |
+| `server/src/middleware/auth.test.ts` | JWT middleware unit tests |
+
+---
+
+## Client Layered design
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -66,29 +97,36 @@ is recomputed by pure functions in `src/services/ordering.ts`.
 **Timestamps:** `updatedAt` drives recent-activity sorting and follow-up
 staleness. `createdAt` is set once. Any move/edit bumps `updatedAt`.
 
-## File map
+## Client file map
 
 ```
-src/
+client/src/
   main.tsx                  React root; BrowserRouter (v7 future flags on)
-  App.tsx                   Store init + routes (/ Dashboard, /board Board,
-                            /help How to use)
+  App.tsx                   Auth check + store init + routes (/ Dashboard,
+                            /board Board, /help How to use);
+                            shows <LoginPage /> when no token
   index.css                 Tailwind import + @theme tokens + base styles
   types.ts                  Domain types (above)
 
   data/
     repository.ts           TrackerRepository interface (load/save)
     localStorageRepository.ts  localStorage impl; seeds on first load
+    apiRepository.ts        TrackerRepository backed by fetch + JWT header
     seed.ts                 createDefaultStages() + createSeedData()
     localStorageRepository.test.ts
 
   store/
     useAppStore.ts          Zustand store + ApplicationInput type.
-                            Actions: init, addApplication, updateApplication,
-                            deleteApplication, moveApplication, addStage,
-                            renameStage, setStageFollowUpDays, deleteStage,
-                            moveStage.
+                            Actions: init(token?), addApplication,
+                            updateApplication, deleteApplication,
+                            moveApplication, addStage, renameStage,
+                            setStageFollowUpDays, deleteStage, moveStage.
+                            init() selects ApiRepository (token present) or
+                            LocalStorageRepository (no token).
                             Private commit() persists every change.
+    useAuthStore.ts         Zustand persist store — JWT token + username;
+                            login, register, logout actions; partialize to
+                            localStorage (only token + username persisted).
 
   services/                 PURE, unit-tested, no React:
     ordering.ts             applicationsInStage, moveCard, reorderStages
@@ -103,10 +141,13 @@ src/
     DashboardPage.tsx       Wires services → dashboard widgets
     BoardPage.tsx           Board + add/edit application modal
     HelpPage.tsx            Static "How to use" instructions (all features)
+    LoginPage.tsx           Full-screen username/password form; login ↔
+                            register toggle; error display
     BoardPage.test.tsx, DashboardPage.test.tsx, HelpPage.test.tsx  (integration)
 
   components/
-    layout/   AppShell (header+nav), NavBar (Dashboard/Board/How-to-use links)
+    layout/   AppShell (header+nav), NavBar (Dashboard/Board/How-to-use links
+              + username display + "Sign out" button)
     common/   Button, Badge, PriorityTag, Modal  (reusable primitives)
     board/    Board (DndContext orchestration), Column (droppable + kebab
               menu + inline rename), Card (sortable, grip handle),

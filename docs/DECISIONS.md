@@ -227,3 +227,43 @@ complexity cost.
 
 **Alternatives rejected:** HashRouter (ugly URLs). Netlify/Vercel (not
 requested; GitHub Pages is free and sufficient for a static SPA).
+
+---
+
+## D13 — Coarse PUT /api/data mirrors TrackerRepository.save()
+
+**Decision:** The server exposes GET + PUT /api/data (full TrackerData snapshot), no per-entity CRUD.
+
+**Why:** The store's `commit()` already saves the whole dataset on every mutation (D4). The server API mirrors that contract exactly, so `ApiRepository` is a near-trivial swap for `LocalStorageRepository` — one new class, nothing else changes.
+
+**Alternatives rejected:** Per-entity CRUD endpoints (would require redesigning the store's commit pattern and add significant surface area for no benefit at this scale).
+
+---
+
+## D14 — Companies are normalized server-side; client sends `company: string`
+
+**Decision:** The DB has a `companies` table with `UNIQUE(user_id, name)`. On PUT the server upserts companies by name and resolves FKs. On GET it denormalizes `company.name` back to `application.company`. The frontend types are unchanged.
+
+**Why:** Normalizing avoids duplicating company metadata (location) across application rows. The upsert-by-name approach means the client never needs to know about company IDs — the swap from `LocalStorageRepository` to `ApiRepository` is transparent.
+
+**Alternatives rejected:** Storing company as a plain text column in `applications` (loses location normalization). Exposing company IDs to the client (requires frontend type changes and more API surface).
+
+---
+
+## D15 — JWT stored in localStorage via Zustand persist
+
+**Decision:** The JWT is stored in `localStorage` through a Zustand `persist` store (`useAuthStore`). httpOnly cookies were considered and rejected.
+
+**Why:** httpOnly cookies require careful CORS + SameSite configuration and don't work across origins (GitHub Pages client ↔ Render server) without `credentials: 'include'` everywhere. For a personal tracker with no financial-grade data, the XSS risk of localStorage is acceptable. The `partialize` option ensures only `token` and `username` are persisted (not action functions).
+
+**Alternatives rejected:** httpOnly cookies (cross-origin complexity). sessionStorage (token lost on tab close, annoying UX). In-memory only (re-auth on every reload).
+
+---
+
+## D16 — LocalStorageRepository kept as no-token fallback
+
+**Decision:** `useAppStore.init(token?)` uses `ApiRepository` when a token is present and `LocalStorageRepository` otherwise.
+
+**Why:** Preserves the local dev workflow — `npm run dev:client` without a server just works. No breaking change for anyone running without a backend. The `TrackerRepository` seam (D1) makes this trivial.
+
+**Alternatives rejected:** Requiring a token always (breaks local dev). Removing `LocalStorageRepository` (breaks offline use and increases migration complexity for existing users).

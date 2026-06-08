@@ -3,6 +3,20 @@
 Newest first. One bullet per meaningful change. Add an entry whenever you change
 behavior, structure, or dependencies (see the documentation rule in `CLAUDE.md`).
 
+## 2026-06-08 — Backend implementation complete (Tasks 3–12)
+
+- **DB schema pushed to Neon** — `users`, `companies` (UNIQUE user_id+name), `stages`, `applications` (FK→companies+stages, CASCADE delete). See `docs/DEPLOYMENT.md` for Neon setup.
+- **Hono server** — `server/src/app.ts` + `server/src/index.ts`: CORS, JWT middleware on `/api/data/*` and `/api/auth/account`, health endpoint. Hosted on Render (free tier).
+- **Auth routes** — POST `/api/auth/register` + `/api/auth/login` (bcrypt cost 10, 30-day JWT). Security: constant-time login (dummy hash for missing users), bcrypt 72-byte limit enforced.
+- **Data routes** — GET `/api/data` (load + denormalize companies), PUT `/api/data` (transactional full-replace: upsert companies, delete+insert stages+applications).
+- **`ApiRepository`** — `client/src/data/apiRepository.ts` implements `TrackerRepository` via fetch + JWT header. Swap point is `useAppStore.init(token?)`.
+- **`useAuthStore`** — Zustand persist store for JWT token + username (`partialize` to localStorage). `login`, `register`, `logout` actions.
+- **`LoginPage`** — full-screen form, login ↔ register toggle, error display.
+- **Auth wired into app** — `App.tsx` shows `<LoginPage />` when no token; passes token to `init()`; `useAppStore` swaps repo on token change.
+- **NavBar** — username display + "Sign out" button added.
+- **Deployment guide** — `docs/DEPLOYMENT.md` with Neon + Render + GitHub Pages instructions.
+- Design decisions D13–D16 recorded in `docs/DECISIONS.md`.
+
 ## 2026-06-07 — Backend scaffolding (Tasks 1–2)
 
 - **Monorepo reorganization** — all frontend source moved to `client/` via
