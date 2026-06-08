@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { sign } from 'hono/jwt';
+import { sign, jwt } from 'hono/jwt';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
@@ -71,4 +71,11 @@ authRouter.post('/login', async (c) => {
     process.env.JWT_SECRET!,
   );
   return c.json({ token, username });
+});
+
+authRouter.use('/account', jwt({ secret: process.env.JWT_SECRET!, alg: 'HS256' }));
+authRouter.delete('/account', async (c) => {
+  const userId = (c.get('jwtPayload') as { sub: string }).sub;
+  await db.delete(users).where(eq(users.id, userId));
+  return new Response(null, { status: 204 });
 });
