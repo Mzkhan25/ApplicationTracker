@@ -8,6 +8,7 @@ import type {
 } from '../types';
 import type { TrackerRepository } from '../data/repository';
 import { LocalStorageRepository } from '../data/localStorageRepository';
+import { ApiRepository } from '../data/apiRepository';
 import { applicationsInStage, moveCard, reorderStages } from '../services/ordering';
 
 /** Editable fields when creating or updating an application. */
@@ -31,7 +32,7 @@ const STAGE_PALETTE = ['#6366f1', '#ec4899', '#14b8a6', '#f97316', '#0ea5e9'];
 
 interface AppState extends TrackerData {
   loaded: boolean;
-  init: () => Promise<void>;
+  init: (token?: string) => Promise<void>;
   addApplication: (input: ApplicationInput) => void;
   updateApplication: (id: string, patch: Partial<ApplicationInput>) => void;
   deleteApplication: (id: string) => void;
@@ -43,14 +44,14 @@ interface AppState extends TrackerData {
   moveStage: (activeId: string, overId: string) => void;
 }
 
-const repo: TrackerRepository = new LocalStorageRepository();
+let activeRepo: TrackerRepository = new LocalStorageRepository();
 const nowIso = (): string => new Date().toISOString();
 
 export const useAppStore = create<AppState>((set, get) => {
   /** Apply a dataset change to state and persist it. */
   const commit = (data: TrackerData) => {
     set(data);
-    void repo.save(data);
+    void activeRepo.save(data);
   };
 
   return {
@@ -58,8 +59,9 @@ export const useAppStore = create<AppState>((set, get) => {
     applications: [],
     loaded: false,
 
-    init: async () => {
-      const data = await repo.load();
+    init: async (token?: string) => {
+      activeRepo = token ? new ApiRepository(token) : new LocalStorageRepository();
+      const data = await activeRepo.load();
       set({ stages: data.stages, applications: data.applications, loaded: true });
     },
 

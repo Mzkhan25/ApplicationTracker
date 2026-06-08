@@ -4,7 +4,10 @@ import type { TrackerRepository } from './repository';
 const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '');
 
 export class ApiRepository implements TrackerRepository {
-  constructor(private readonly token: string) {}
+  private readonly token: string;
+  constructor(token: string) {
+    this.token = token;
+  }
 
   async load(): Promise<TrackerData> {
     const res = await fetch(`${API_BASE}/api/data`, {
