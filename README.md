@@ -1,9 +1,9 @@
 # Application Tracker
 
-A local-first job application tracker with a Jira-style Kanban board and a
+A multi-user job application tracker with a Jira-style Kanban board and a
 dashboard. Track where you applied, the role, and where each application sits in
-your pipeline. Built as a TypeScript + React single-page app styled with
-Tailwind CSS.
+your pipeline. Built as a TypeScript + React SPA (Vite + Tailwind) backed by a
+Hono + Drizzle + Neon API with JWT authentication.
 
 ## Features
 
@@ -12,66 +12,111 @@ Tailwind CSS.
 - **Editable pipeline** — add, rename, reorder (move left/right), and delete
   columns. Defaults: Applied → Phone Screen → Interview → Offer → Rejected.
 - **Rich application cards** — company, role, status, applied date, job URL,
-  priority, location, work mode, salary range, and notes.
-- **Dashboard** — applications-by-stage, a pipeline funnel, recent activity, and
-  follow-up reminders driven by a per-stage window (each column can flag cards
-  that sit idle too long; terminal columns can be left off).
-- **Local-first** — all data is stored in your browser via `localStorage`. No
-  account, no server. The data layer sits behind a `TrackerRepository`
-  interface so a backend can be added later without touching the UI.
-- **In-app "How to use" page** — `/help` documents every feature for end users.
+  priority, location, work mode, salary range, demanded salary, and notes.
+- **Dashboard** — applications-by-stage, a pipeline breakdown donut, recent
+  activity, and follow-up reminders driven by a per-stage window.
+- **Auth** — register/login with JWT; each user's data is isolated. "Sign out"
+  in the NavBar. Account deletion (DELETE /api/auth/account) cascades all data.
+- **In-app "How to use" page** — `/help` documents every feature.
 
 ## Live demo
 
 Deployed to GitHub Pages: **https://mzkhan25.github.io/ApplicationTracker/**
 
+## Monorepo layout
+
+```
+/
+├── client/          React SPA (Vite + Tailwind + Zustand + dnd-kit)
+├── server/          Hono API (Drizzle ORM, Neon/PostgreSQL, bcryptjs)
+├── docs/            Architecture, decisions, changelog, status, deployment
+└── package.json     Root convenience scripts (dev:client, dev:server, …)
+```
+
 ## Getting started
+
+### Client only (falls back to localStorage — no server needed)
 
 ```bash
 npm install
-npm run dev      # start the dev server (http://localhost:5173)
+npm run dev:client   # http://localhost:5173
 ```
+
+### Full stack
+
+```bash
+# 1. Server setup
+cp server/.env.example server/.env
+# Edit server/.env — set DATABASE_URL (Neon), JWT_SECRET, CLIENT_ORIGIN
+
+# 2. Push schema to Neon (first time only)
+cd server && npm run db:push
+
+# 3. Start both processes
+npm run dev:server   # terminal 1 — http://localhost:3000
+npm run dev:client   # terminal 2 — http://localhost:5173
+
+# 4. Point the client at the server
+echo "VITE_API_URL=http://localhost:3000" > client/.env
+```
+
+Register a new account on the login page — sample data is seeded automatically.
 
 ## Scripts
 
-| Command          | Description                              |
-| ---------------- | ---------------------------------------- |
-| `npm run dev`    | Start the Vite dev server                |
-| `npm run build`  | Type-check and build for production       |
-| `npm run preview`| Preview the production build             |
-| `npm test`       | Run the unit/component tests (Vitest)    |
-| `npm run lint`   | Lint the codebase (ESLint)               |
+Root-level scripts delegate to `client/` or `server/` via `--prefix`:
+
+| Command                  | Description                                    |
+| ------------------------ | ---------------------------------------------- |
+| `npm run dev:client`     | Start the Vite dev server (client)             |
+| `npm run dev:server`     | Start the Hono dev server (server)             |
+| `npm run build:client`   | Type-check + production build (client)         |
+| `npm run build:server`   | Type-check + emit ESM (server)                 |
+| `npm run test:client`    | Run client unit/component tests (Vitest)       |
+| `npm run test:server`    | Run server tests (Vitest)                      |
+| `npm run lint:client`    | Lint client (ESLint)                           |
+| `npm run lint:server`    | Lint server (ESLint)                           |
 
 ## Deployment
 
-Push to `main` automatically deploys to GitHub Pages via the
-`.github/workflows/deploy.yml` pipeline (lint → test → build → deploy).
+See [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for the full guide.
+Summary: **Neon** (database) + **Render** (server) + **GitHub Pages** (client).
 
-**One-time setup:** In the GitHub repo go to **Settings → Pages → Source** and
-select **GitHub Actions**.
+Push to `main` automatically deploys the client via
+`.github/workflows/deploy.yml` (lint → test → build → deploy-pages).
+
+**One-time setup:** Settings → Pages → Source = **GitHub Actions**, and add
+`VITE_API_URL` as a repo secret pointing at your Render service URL.
 
 ## Architecture
 
 ```
-UI (pages, components)      React + Tailwind, dnd-kit drag-and-drop
+UI (pages, components)        React + Tailwind, dnd-kit drag-and-drop
         │
-State store (Zustand)       src/store/useAppStore.ts
+Auth store (Zustand persist)  src/store/useAuthStore.ts  JWT token + username
         │
-Domain services (pure)      src/services/  funnel, follow-ups, ordering
+App store (Zustand)           src/store/useAppStore.ts   init(token?) swaps repo
         │
-Repository interface        src/data/repository.ts
-        │
-LocalStorageRepository      src/data/localStorageRepository.ts  ← swap point
+Repository interface          src/data/repository.ts     TrackerRepository
+        ├── LocalStorageRepository   (no token — dev / offline fallback)
+        └── ApiRepository            (token present — fetch + Bearer header)
+                                           │
+                            Hono REST API  server/src/
+                                           │
+                            Drizzle ORM → Neon (PostgreSQL)
 ```
 
-The repository boundary is the key seam: the store and UI never know whether
-data comes from `localStorage` or a future API. Domain logic lives in pure,
-unit-tested functions in `src/services/`.
+Domain logic lives in pure, unit-tested functions in `client/src/services/`.
+The repository boundary is the swap point — the store and UI never know whether
+data comes from `localStorage` or the API.
 
 ## Tech stack
 
-React 18 · TypeScript · Vite · Tailwind CSS v4 · Zustand · dnd-kit ·
-React Router · Vitest + React Testing Library.
+**Client:** React 18 · TypeScript (strict) · Vite 6 · Tailwind CSS v4 ·
+Zustand 5 · dnd-kit · React Router 6 · Vitest + React Testing Library
+
+**Server:** Hono 4 · Drizzle ORM · postgres.js · Neon (serverless PostgreSQL) ·
+bcryptjs · JSON Web Tokens
 
 ## Documentation
 
@@ -84,3 +129,4 @@ documented so work can be resumed without re-deriving context.
 - [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — layers, data flow, file map.
 - [`docs/DECISIONS.md`](./docs/DECISIONS.md) — why things are the way they are.
 - [`docs/CHANGELOG.md`](./docs/CHANGELOG.md) — history of changes.
+- [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) — Neon + Render + Pages setup.
