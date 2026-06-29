@@ -2,19 +2,19 @@
 
 **Single source of truth for "where are we." Update this on every change.**
 
-_Last updated: 2026-06-08_
+_Last updated: 2026-06-29_
 
 ## Snapshot
 
 Backend implementation **complete** (all 12 tasks done). The repo is a monorepo
 (`client/` + `server/`). The full auth + data API is implemented (Hono + Drizzle
-+ Neon). The client has `ApiRepository`, `useAuthStore`, `LoginPage`, and the
++ Railway PostgreSQL). The client has `ApiRepository`, `useAuthStore`, `LoginPage`, and the
 logout button wired in. All quality gates pass on both packages.
 
 | Gate                        | Status | Notes                                              |
 | --------------------------- | ------ | -------------------------------------------------- |
 | `npm run lint:client`       | ✅ pass | 0 problems                                         |
-| `npm run build:client`      | ✅ pass | tsc strict + Vite, assets at `/ApplicationTracker/` |
+| `npm run build:client`      | ✅ pass | tsc strict + Vite, assets at `/` |
 | `npm run test:client`       | ✅ pass | 32 tests, 10 files                                 |
 | `npm run dev:client`        | ✅ runs | `/`, `/board`, `/favicon.svg` → HTTP 200           |
 | GitHub Actions CI | ✅ ready | ci.yml: lint + test for client + server; Railway handles deploy |
