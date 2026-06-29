@@ -267,3 +267,25 @@ requested; GitHub Pages is free and sufficient for a static SPA).
 **Why:** Preserves the local dev workflow — `npm run dev:client` without a server just works. No breaking change for anyone running without a backend. The `TrackerRepository` seam (D1) makes this trivial.
 
 **Alternatives rejected:** Requiring a token always (breaks local dev). Removing `LocalStorageRepository` (breaks offline use and increases migration complexity for existing users).
+
+---
+
+## D17 — All-Railway deployment (replaces Neon + Render + GitHub Pages)
+
+**Decision:** Deploy DB, server, and client all on Railway: managed PostgreSQL
+plugin (DB), Node.js server service (root: `server/`), static SPA service
+(root: `client/`, served by `serve -s`).
+
+**Why:** One platform simplifies networking (Railway services share a private
+network), environment variable wiring (`DATABASE_URL` auto-injected from the PG
+plugin), billing, and operational surface area. Replaces the original three-platform
+plan (Neon + Render + GitHub Pages).
+
+**Client-side changes required:** The GitHub Pages base path (`/ApplicationTracker/`)
+is removed — Vite `base` is now always `/`. The `public/404.html` redirect trick
+and its paired `index.html` decode script are removed; `serve -s` (single-page-app
+mode) serves `index.html` for all unmatched paths natively.
+
+**Alternatives rejected:** Keep Neon + Render + GitHub Pages (three platforms, three
+logins, more config surface). Netlify/Vercel for the client only (still two platforms).
+Docker on Railway (unnecessary complexity for a small Node.js app + Vite SPA).

@@ -1,63 +1,74 @@
 # Deployment Guide
 
+All three services (database, backend, frontend) are hosted on [Railway](https://railway.com).
+
 ## Prerequisites
 
-- A [Neon](https://neon.tech) account (free tier)
-- A [Render](https://render.com) account (free tier)
-- The repo pushed to GitHub with GitHub Pages enabled
+- A Railway account (free tier)
+- Repo pushed to GitHub
 
 ---
 
-## 1. Neon (database)
+## 1. Create Railway project
 
-1. Create a new Neon project at https://console.neon.tech
-2. Copy the connection string from the dashboard (it looks like `postgres://user:pass@host/db?sslmode=require`)
-3. Create `server/.env` from `server/.env.example` and paste the URL as `DATABASE_URL`
-4. Push the schema:
+Go to https://railway.com → New Project → Deploy from GitHub repo → select
+the `ApplicationTracker` repository.
+
+---
+
+## 2. PostgreSQL (database)
+
+1. Add Service → Database → PostgreSQL.
+2. Railway auto-injects `DATABASE_URL` into any service that links this plugin.
+3. Push the schema locally — copy the connection string from the plugin's
+   Variables tab, create `server/.env`:
+   ```
+   DATABASE_URL=<railway-postgres-url>
+   JWT_SECRET=placeholder
+   ```
+   Then run:
    ```bash
    cd server && npm run db:push
    ```
-   Expected: drizzle-kit confirms all four tables created.
+   Expected: drizzle-kit confirms 4 tables (`users`, `companies`, `stages`,
+   `applications`).
 
 ---
 
-## 2. Render (server)
+## 3. Server (Hono API)
 
-1. Go to https://dashboard.render.com → New → Web Service
-2. Connect your GitHub repo
-3. Settings:
-   - **Root directory:** `server`
-   - **Build command:** `npm install && npm run build`
-   - **Start command:** `node dist/index.js`
-   - **Instance type:** Free
+1. Add Service → GitHub Repo → select `ApplicationTracker`
+2. Set **Root Directory** to `server`
+3. Link the PostgreSQL plugin so `DATABASE_URL` is auto-injected
 4. Add environment variables:
    | Key | Value |
    |---|---|
-   | `DATABASE_URL` | Your Neon connection string |
-   | `JWT_SECRET` | A long random string (generate with `openssl rand -hex 32`) |
-   | `CLIENT_ORIGIN` | `https://<your-github-username>.github.io` |
-5. Deploy. Render gives you a URL like `https://application-tracker-xyz.onrender.com`
+   | `JWT_SECRET` | `openssl rand -hex 32` |
+   | `CLIENT_ORIGIN` | Client Railway domain — set after client deploys |
+5. Deploy. Verify green on `/health`. Copy the server domain.
 
 ---
 
-## 3. Client (GitHub Pages)
+## 4. Client (React SPA)
 
-1. Create `client/.env` from `client/.env.example` and set `VITE_API_URL` to your Render URL.
-   - For GitHub Pages CI, add `VITE_API_URL` as a repository secret and inject it in `deploy.yml`:
-     ```yaml
-     - name: Build
-       working-directory: client
-       run: npm run build
-       env:
-         VITE_API_URL: ${{ secrets.VITE_API_URL }}
-     ```
-2. Enable GitHub Pages: repo Settings → Pages → Source = **GitHub Actions**
-3. Push to `main` — the workflow deploys automatically.
+1. Add Service → GitHub Repo → select `ApplicationTracker`
+2. Set **Root Directory** to `client`
+3. Add environment variable:
+   | Key | Value |
+   |---|---|
+   | `VITE_API_URL` | Server domain from step 3 |
+4. Deploy. Copy the client domain.
+5. Return to the server service → set `CLIENT_ORIGIN` = client domain → Railway
+   redeploys.
 
 ---
 
-## 4. Notes
+## 5. Notes
 
-- **Render free tier** spins down after 15 min of inactivity. The first request after idle takes ~50 s (cold start). This is expected and acceptable.
-- **Neon free tier** auto-suspends; the first query after suspend takes ~1–2 s. Also expected.
-- To update the schema in future: edit `server/src/db/schema.ts`, run `npm run db:push` (or `db:generate` + `db:migrate` for production migrations).
+- Railway auto-deploys both services on every push to `main`.
+- `VITE_API_URL` is a **build-time** Vite variable embedded into the bundle
+  during Railway's build step. Changing it requires a client redeploy.
+- To update the DB schema: edit `server/src/db/schema.ts`, run `npm run db:push`
+  (use `db:generate` + `db:migrate` for production-safe zero-downtime migrations).
+- The server exposes `GET /health → { ok: true }`, used by Railway's health check
+  (configured in `server/railway.toml`).

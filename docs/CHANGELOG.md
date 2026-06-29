@@ -3,6 +3,24 @@
 Newest first. One bullet per meaningful change. Add an entry whenever you change
 behavior, structure, or dependencies (see the documentation rule in `CLAUDE.md`).
 
+## 2026-06-29 — Railway deployment (replaces Neon + Render + GitHub Pages)
+
+- **Client `vite.config.ts`**: Removed conditional `base` (`/ApplicationTracker/`
+  on build, `/` on dev); now always `base: '/'` for Railway.
+- **Client `index.html`**: Removed the GitHub Pages SPA decode `<script>`.
+- **Client `public/404.html`**: Deleted — GitHub Pages path-encoding trick no
+  longer needed; `serve -s` handles SPA routing.
+- **Client `src/main.tsx`**: Removed `basename` variable (dead with `base: '/'`);
+  `BrowserRouter` now uses its default basename of `'/'`.
+- **Client `package.json`**: Added `serve ^14` dependency + `start` script
+  (`serve -s dist -l tcp://0.0.0.0:$PORT`).
+- **`client/railway.toml`**: New file — build: `npm ci && npm run build`, start: `npm start`.
+- **`server/railway.toml`**: New file — build: `npm ci && npm run build`, start:
+  `node dist/index.js`, healthcheck: `/health`.
+- **CI**: `deploy.yml` (GitHub Pages) replaced by `ci.yml` (lint + test for both
+  client and server). Railway handles deployment natively.
+- **Docs**: `DEPLOYMENT.md` rewritten for Railway; D17 added to `DECISIONS.md`.
+
 ## 2026-06-08 — Backend implementation complete (Tasks 3–12)
 
 - **DB schema pushed to Neon** — `users`, `companies` (UNIQUE user_id+name), `stages`, `applications` (FK→companies+stages, CASCADE delete). See `docs/DEPLOYMENT.md` for Neon setup.

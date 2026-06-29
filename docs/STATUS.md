@@ -17,7 +17,7 @@ logout button wired in. All quality gates pass on both packages.
 | `npm run build:client`      | ✅ pass | tsc strict + Vite, assets at `/ApplicationTracker/` |
 | `npm run test:client`       | ✅ pass | 32 tests, 10 files                                 |
 | `npm run dev:client`        | ✅ runs | `/`, `/board`, `/favicon.svg` → HTTP 200           |
-| GitHub Actions              | ✅ ready | deploy.yml updated for `client/` working directory |
+| GitHub Actions CI | ✅ ready | ci.yml: lint + test for client + server; Railway handles deploy |
 | `npm run test:server`       | ✅ pass | 4 tests (JWT middleware)                           |
 | `npm run build:server`      | ✅ pass | tsc NodeNext/ESM, emits to `server/dist/`          |
 
@@ -169,11 +169,9 @@ Spec: `docs/superpowers/specs/2026-06-07-backend-design.md`
 
 See `docs/DEPLOYMENT.md` for the full guide. Summary:
 
-1. **Neon** — create project, copy connection string, run `cd server && npm run db:push`.
-2. **Render** — connect repo, set root directory to `server`, add env vars
-   (`DATABASE_URL`, `JWT_SECRET`, `CLIENT_ORIGIN`).
-3. **GitHub Pages** — add `VITE_API_URL` repo secret, enable Pages (Settings →
-   Pages → Source = GitHub Actions), push to `main`.
+1. **Railway** — Create project, add PostgreSQL plugin, deploy server service
+   (root: `server/`), push schema with `db:push`, deploy client service
+   (root: `client/`), wire `CLIENT_ORIGIN` and `VITE_API_URL` env vars.
 
 ## Other suggested next steps (post-deployment)
 
