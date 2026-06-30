@@ -21,7 +21,7 @@ Hono + Drizzle + Neon API with JWT authentication.
 
 ## Live demo
 
-Deployed to GitHub Pages: **https://mzkhan25.github.io/ApplicationTracker/**
+Deployed to Railway: **https://delightful-education-production-7387.up.railway.app/**
 
 ## Monorepo layout
 
@@ -80,13 +80,9 @@ Root-level scripts delegate to `client/` or `server/` via `--prefix`:
 ## Deployment
 
 See [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) for the full guide.
-Summary: **Neon** (database) + **Render** (server) + **GitHub Pages** (client).
+All three services (database, API, client) are hosted on **Railway**.
 
-Push to `main` automatically deploys the client via
-`.github/workflows/deploy.yml` (lint → test → build → deploy-pages).
-
-**One-time setup:** Settings → Pages → Source = **GitHub Actions**, and add
-`VITE_API_URL` as a repo secret pointing at your Render service URL.
+Push to `main` automatically redeploys both the client and server services.
 
 ## Architecture
 
